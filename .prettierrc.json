@@ -1,15 +1,15 @@
 {
-    "printWidth": 80,
-    "singleQuote": true,
-    "trailingComma": "all",
-    "tabWidth": 2,
-    "arrowParens": "avoid",
-    "overrides": [
-      {
-        "files": "*.sol",
-        "options": {
-          "tabWidth": 4
-        }
+  "printWidth": 80,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "tabWidth": 2,
+  "arrowParens": "avoid",
+  "overrides": [
+    {
+      "files": "*.sol",
+      "options": {
+        "tabWidth": 4
       }
-    ]
-  }
+    }
+  ]
+}

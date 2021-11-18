@@ -1,0 +1,12 @@
+{
+  "overrides": [
+    {
+      "files": "**/test/**/*.{ts,tsx,js,jsx}",
+      "rules": {
+        "prefer-arrow-callback": "off",
+        // mocha recommended defaults
+        "func-names": "off"
+      }
+    }
+  ]
+}

@@ -7,10 +7,16 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "chess.js": "^0.12.0",
+    "ethers": "^5.5.1",
+    "nft.storage": "^4.0.0",
     "react": "^17.0.2",
+    "react-chessground": "^1.5.0",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
-    "web-vitals": "^1.0.1"
+    "streamr-client": "^5.5.0",
+    "web-vitals": "^1.0.1",
+    "web3.storage": "^3.3.3"
   },
   "scripts": {
     "start": "craco start",

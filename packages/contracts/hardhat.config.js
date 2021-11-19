@@ -11,7 +11,7 @@ module.exports = {
       chainId: 1337,
     },
     mumbai: {
-      url: "https://rpc-mumbai.matic.today",
+      url: "https://matic-mumbai.chainstacklabs.com/",
       accounts: [privateKey],
     },
   },

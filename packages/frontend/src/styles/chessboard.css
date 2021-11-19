@@ -1,0 +1,112 @@
+body {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande',
+    'Lucida Sans', Arial, sans-serif;
+}
+
+.userTime {
+  font-size: 40px;
+  color: black;
+  border: 3px solid black;
+  margin: 1%;
+  text-align: center;
+}
+
+.username {
+  font-size: 18px;
+  color: black;
+}
+
+.userAddress {
+  width: 100%;
+  font-size: 18px;
+  color: black;
+}
+
+.rating {
+  color: black;
+  font-size: 18px;
+  text-align: center;
+}
+
+.user {
+  margin-left: 5%;
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+}
+
+.userinfo {
+  display: block;
+  flex-direction: column;
+  width: 100%;
+}
+
+#outerLog {
+  background-color: aliceblue;
+  width: 18%;
+  border: 3px rgb(86, 95, 104);
+  border-radius: 10px;
+  height: 30vh;
+  overflow: hidden;
+}
+
+#innerLog,
+#chatLog {
+  padding-bottom: 5px;
+  font-size: large;
+  background-color: aliceblue;
+  height: 25vh;
+  width: 100%;
+  overflow-y: auto;
+  text-align: center;
+}
+
+#chatLog {
+  height: 50vh;
+  font-size: medium;
+  text-align: left;
+  margin-left: 10px;
+}
+
+br {
+  line-height: 50%;
+}
+
+#chat {
+  text-align: center;
+  width: 20vw;
+}
+
+#everything {
+  display: flex;
+  justify-content: center;
+}
+
+#buttons {
+  display: flex;
+  justify-content: center;
+}
+
+#userAddress {
+  max-width: 50px;
+}
+
+#chessboard > div > cg-helper > cg-container > svg.cg-custom-svgs {
+  height: 0px;
+}
+
+#dashboard {
+  background-color: aliceblue;
+  display: flex;
+  border-radius: 10px;
+  padding: 10px;
+  flex-direction: column;
+  height: 30%;
+  margin: auto;
+  vertical-align: middle;
+}
+
+#gameMode {
+  font-size: 15px;
+  text-align: center;
+}

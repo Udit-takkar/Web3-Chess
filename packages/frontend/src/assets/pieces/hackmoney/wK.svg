@@ -1,0 +1,79 @@
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+	<defs>
+		<style>
+		.vhvuivhiuhoiugoaigtoiuaywie,
+		.haiuhiuwoeghfiuzyc {
+			fill: #fff;
+		}
+		
+		.vhvuivhiuhoiugoaigtoiuaywie {
+			stroke: #fff;
+		}
+		
+		.vhvuivhiuhoiugoaigtoiuaywie,
+		.haiuhiuwoeghfiuzyc,
+		.jvihzuiweiuiuhuioahgoiuye,
+		.cnkajhweoiufeefas,
+		.j8aweiohfioahoizpxcuyioy {
+			stroke-miterlimit: 10;
+		}
+		
+		.vhvuivhiuhoiugoaigtoiuaywie,
+		.haiuhiuwoeghfiuzyc,
+		.jvihzuiweiuiuhuioahgoiuye,
+		.cnkajhweoiufeefas {
+			stroke-width: 8px;
+		}
+		
+		.haiuhiuwoeghfiuzyc,
+		.jvihzuiweiuiuhuioahgoiuye,
+		.cnkajhweoiufeefas,
+		.j8aweiohfioahoizpxcuyioy {
+			stroke: #000;
+		}
+		
+		.jvihzuiweiuiuhuioahgoiuye {
+			fill: #ffe94d;
+		}
+		
+		.cnkajhweoiufeefas {
+			fill: none;
+		}
+		
+		.j8aweiohfioahoizpxcuyioy {
+			stroke-width: 6px;
+		}
+		
+		.vahwefhzcvuigweiuyttzyzututiuytifuytuytayutuy {
+			fill: #63c7a9;
+		}
+		
+		.uridhghghehuuncnnvoowqqpvyfae {
+			fill: #ffc64e;
+		}
+		
+		.cnvauwhefiuuiawheiufyiuybhgiuhiuaefj {
+			fill: #5468f3;
+		}
+		
+		.gyzgxcyvuguyiauyiwgeuiygaifuyguyiauiwyefuyi {
+			fill: #f96b97;
+		}
+		</style>
+	</defs>
+	<rect class="vhvuivhiuhoiugoaigtoiuaywie" x="130" y="132" width="52" height="57" />
+	<rect class="vhvuivhiuhoiugoaigtoiuaywie" x="83" y="184" width="140" height="42" />
+	<path class="haiuhiuwoeghfiuzyc" d="M217.11,232.07c49.13-31.36,59.28-75.53,39.16-96.45-15.14-15.74-45.2-16-54.29-15.84" />
+	<path class="haiuhiuwoeghfiuzyc" d="M188.9,231.83a183.18,183.18,0,0,0,26.21-43.1c5.1-11.89,8.3-19.57,8-30.24-.17-6.34-.77-28.19-19-38.5-14.18-8-34.06-6.23-49.92,4.3" />
+	<path class="haiuhiuwoeghfiuzyc" d="M89,232c-49.13-31.35-59.28-75.53-39.15-96.45,15.14-15.74,45.19-16,54.28-15.83" />
+	<path class="haiuhiuwoeghfiuzyc" d="M119.21,232A183.51,183.51,0,0,1,93,188.93c-5.1-11.89-8.29-19.58-8-30.25.17-6.34.78-28.19,19-38.5,14.18-8,34.06-6.23,49.92,4.3" />
+	<path class="haiuhiuwoeghfiuzyc" d="M234.12,278.58V259.45a14.32,14.32,0,0,0-4.22-10.14,14.67,14.67,0,0,0-10.13-4.21H81a14.39,14.39,0,0,0-14.35,14.35V278H234.12V262.42" />
+	<rect class="jvihzuiweiuiuhuioahgoiuye" x="80" y="228" width="146" height="17" />
+	<line class="cnkajhweoiufeefas" x1="153.03" y1="124.48" x2="153" y2="232.02" />
+	<polygon class="j8aweiohfioahoizpxcuyioy" points="153.5 106.39 171.36 80.98 153.5 92.18 135.64 80.98 153.5 106.39" />
+	<polygon class="j8aweiohfioahoizpxcuyioy" points="153.01 78.3 176.17 64.4 153.01 23.69 129.85 63.24 153.01 78.3" />
+	<circle class="vahwefhzcvuigweiuyttzyzututiuytifuytuytayutuy" cx="65.01" cy="158.01" r="6.01" />
+	<circle class="uridhghghehuuncnnvoowqqpvyfae" cx="119.67" cy="147.01" r="6.01" />
+	<circle class="cnvauwhefiuuiawheiufyiuybhgiuhiuaefj" cx="188.33" cy="146.01" r="6.01" />
+	<circle class="gyzgxcyvuguyiauyiwgeuiygaifuyguyiauiwyefuyi" cx="241.99" cy="157.01" r="6.01" />
+</svg>

@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Web3Context } from '../contexts/Web3Context';
+import axios from 'axios';
 
 function Home() {
   const { connectAccount, loading, account, disconnect } =

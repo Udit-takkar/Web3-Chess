@@ -12,6 +12,7 @@ import Web3 from 'web3';
 
 import { SUPPORTED_NETWORKS } from '../utils/constants';
 import { getRpcUrl, logError } from '../utils/helpers';
+const StreamrClient = require('streamr-client');
 
 const providerOptions = {
   walletconnect: {
@@ -34,7 +35,7 @@ export const useWeb3 = () => useContext(Web3Context);
 
 export const Web3ContextProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
-  const [{ account, provider, chainId }, setWeb3] = useState({});
+  const [{ account, provider, chainId, client }, setWeb3] = useState({});
 
   const setWeb3Provider = async (prov, initialCall = false) => {
     if (prov) {
@@ -43,6 +44,15 @@ export const Web3ContextProvider = ({ children }) => {
         web3Provider.currentProvider,
       );
       const gotChainId = Number(prov.chainId);
+      console.log(gotProvider.provider);
+      console.log(web3Provider);
+
+      const streamr = await new StreamrClient({
+        // restUrl: 'http://localhost/api/v1', // if you want to test locally in the streamr-docker-dev environment
+        auth: { ethereum: gotProvider.provider },
+        publishWithSignature: 'never',
+      });
+      console.log('client', streamr);
       if (initialCall) {
         const signer = gotProvider.getSigner();
         const gotAccount = await signer.getAddress();
@@ -51,12 +61,14 @@ export const Web3ContextProvider = ({ children }) => {
           provider: gotProvider,
           chainId: gotChainId,
           account: gotAccount,
+          client: streamr,
         }));
       } else {
         setWeb3(_provider => ({
           ..._provider,
           provider: gotProvider,
           chainId: gotChainId,
+          client: streamr,
         }));
       }
     }

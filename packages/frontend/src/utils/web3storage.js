@@ -1,5 +1,4 @@
-// import { Web3Storage, File } from 'web3.storage/dist/bundle.esm.min';
-import { Web3Storage } from 'web3.storage';
+import { Web3Storage } from 'web3.storage/dist/bundle.esm.min';
 
 function getAccessToken() {
   return process.env.REACT_APP_WEB3STORAGE_KEY;

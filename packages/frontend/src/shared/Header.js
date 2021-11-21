@@ -1,12 +1,13 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Web3Context } from '../contexts/Web3Context';
 import Logo from '../assets/logo.png';
 import { NavLink } from 'react-router-dom';
 import { getAccountString } from '../utils/helpers';
 
 function Header() {
-  const { connectAccount, loading, account, disconnect } =
+  const { connectAccount, loading, account, disconnect, client } =
     useContext(Web3Context);
+
   return (
     <nav className="fixed top-0 left-0 select-none bg-nav  w-full min-h-20 h-20">
       <div className="flex flex-no-shrink justify-between h-full items-center ">

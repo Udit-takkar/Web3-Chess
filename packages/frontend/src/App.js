@@ -18,7 +18,11 @@ function App() {
         <Layout>
           <Routes>
             <Route exact path="/" element={<Home />} />
-            <Route exact path="/play" element={<Play />} />
+            <Route
+              exact
+              path="/play"
+              element={<Play vsComputer={true} startColor="white" />}
+            />
           </Routes>
         </Layout>
       </Router>

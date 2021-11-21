@@ -44,15 +44,13 @@ export const Web3ContextProvider = ({ children }) => {
         web3Provider.currentProvider,
       );
       const gotChainId = Number(prov.chainId);
-      console.log(gotProvider.provider);
-      console.log(web3Provider);
-
       const streamr = await new StreamrClient({
         // restUrl: 'http://localhost/api/v1', // if you want to test locally in the streamr-docker-dev environment
         auth: { ethereum: gotProvider.provider },
         publishWithSignature: 'never',
+        autoConnect: 'true',
       });
-      console.log('client', streamr);
+
       if (initialCall) {
         const signer = gotProvider.getSigner();
         const gotAccount = await signer.getAddress();
@@ -136,6 +134,7 @@ export const Web3ContextProvider = ({ children }) => {
         chainId,
         connectAccount: connectWeb3,
         disconnect,
+        client,
       }}
     >
       {children}

@@ -36,14 +36,13 @@ function Play({ startColor, vsComputer }) {
   const [game, setGame] = useState({
     white: {
       address: null,
-      remainingTime: null,
+      remainingTime: 10,
     },
     black: {
       address: null,
-      remainingTime: null,
+      remainingTime: 10,
     },
   });
-
   const currDate = new Date();
 
   const dateToday = `${currDate.getFullYear()}.${
@@ -61,7 +60,7 @@ function Play({ startColor, vsComputer }) {
   const opponentColor = startColor === 'white' ? 'black' : 'white';
 
   const publishMove = async (code, from, to, moves) => {
-    await client.publish(code, {
+    return client.publish(code, {
       type: 'move',
       move: { from, to },
       from: game[startColor].address,
@@ -72,9 +71,9 @@ function Play({ startColor, vsComputer }) {
   };
 
   async function updateLog() {
-    const game = chess.pgn();
+    const gamePgn = chess.pgn();
     // This pgn has to be saved
-    setPgn(game);
+    setPgn(gamePgn);
     const moves = chess.history();
     const movePairs = [];
     for (let i = 0; i < moves.length; i += 2) {
@@ -227,7 +226,7 @@ function Play({ startColor, vsComputer }) {
     updateLog();
   };
 
-  const onMove = (from, to) => {
+  const onMove = async (from, to) => {
     const moves = chess.moves({ verbose: true });
     for (let i = 0, len = moves.length; i < len; i += 1) {
       if (moves[i].flags.indexOf('p') !== -1 && moves[i].from === from) {
@@ -240,26 +239,19 @@ function Play({ startColor, vsComputer }) {
     }
 
     const allMoves = chess.history({ verbose: true });
-    publishMove(code, from, to, allMoves);
+    await publishMove(code, from, to, allMoves);
 
-    // if (chess.move({ from, to, promotion: 'q' })) {
-    //   setFen(chess.fen());
-    //   setLastMove([from, to]);
-    //   setChecked(chess.in_check());
-    //   setColor(turnColor());
-
-    //   if (vsComputer) {
-    //     setTimeout(randomMove, 500);
-    //   } else {
-    //     client.publish(code, {
-    //       type: 'move',
-    //       move: { from, to, promotion: 'q' },
-    //       from: gameData[startColor].address,
-    //       time: Date.now(),
-    //       fen: chess.fen(),
-    //     });
-    //   }
-    // }
+    if (chess.move({ from, to, promotion: 'q' })) {
+      setFen(chess.fen());
+      setLastMove([from, to]);
+      setChecked(chess.in_check());
+      setColor(turnColor());
+      if (vsComputer) {
+        setTimeout(randomMove, 500);
+      } else {
+        publishMove(code, from, to, allMoves);
+      }
+    }
     updateLog();
   };
   const formatTime = msecs => {
@@ -276,7 +268,7 @@ function Play({ startColor, vsComputer }) {
     return `${mins}:${secs}.${tenth}`;
   };
 
-  const promotion = e => {
+  const promotion = async e => {
     const from = pendingMove[0];
     const to = pendingMove[1];
 
@@ -289,7 +281,7 @@ function Play({ startColor, vsComputer }) {
     if (vsComputer) {
       setTimeout(randomMove, 500);
     } else {
-      publishMove(code, from, to, chess.history({ verbose: true }));
+      await publishMove(code, from, to, chess.history({ verbose: true }));
     }
     updateLog();
   };
@@ -343,7 +335,7 @@ function Play({ startColor, vsComputer }) {
     // if (vsComputer) {
     //   setIsMyMove(true);
     // } else {
-
+    // if (vsComputer) setIsMyMove(true);
     client.subscribe(
       {
         stream: code,
@@ -428,6 +420,7 @@ function Play({ startColor, vsComputer }) {
         }
       },
     );
+    // }
     return function cleanup() {
       client.unsubscribe(code);
     };

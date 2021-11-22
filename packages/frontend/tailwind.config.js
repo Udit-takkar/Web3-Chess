@@ -7,6 +7,7 @@ module.exports = {
       colors: {
         nav: '#26211b',
         navFont: '#FFFFFFA6',
+        'modal-bg-color': 'rgba(75, 85, 99,0.20)',
       },
       fontFamily: {
         poppins: ['Poppins'],

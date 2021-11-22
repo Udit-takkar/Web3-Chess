@@ -22,10 +22,10 @@ function Header() {
             Home
           </NavLink>
           <NavLink
-            to="/profile"
+            to="/dashboard"
             className="text-navFont font-poppins font-bold mx-3"
           >
-            My Profile
+            Dashboard
           </NavLink>
           <p className="text-navFont font-poppins font-bold mx-3">
             {loading ? (

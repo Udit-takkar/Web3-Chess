@@ -1,11 +1,26 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Web3Context } from '../contexts/Web3Context';
-import axios from 'axios';
+import CreateMatch from '../components/modal/CreateMatch';
+import JoinMatch from '../components/modal/JoinMatch';
 
 function Home() {
   const { connectAccount, loading, account, disconnect } =
     useContext(Web3Context);
-  return <div>Test {account}</div>;
+
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isJoinMatchModalOpen, setJoinModalOpen] = useState(false);
+
+  return (
+    <div>
+      Test {account}
+      {isCreateModalOpen && (
+        <CreateMatch setCreateModalOpen={setCreateModalOpen} />
+      )}
+      {isJoinMatchModalOpen && (
+        <JoinMatch setJoinModalOpen={setJoinModalOpen} />
+      )}
+    </div>
+  );
 }
 
 export default Home;

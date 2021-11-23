@@ -66,4 +66,4 @@ function JoinMatch({ setJoinModalOpen }) {
   );
 }
 
-export default JoinMatch;
+export default Portal(JoinMatch);

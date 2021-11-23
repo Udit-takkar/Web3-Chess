@@ -3,26 +3,25 @@ import Chess from 'chess.js';
 import Chessground from 'react-chessground';
 import { Web3Context } from '../contexts/Web3Context';
 import { makeFileObjects, storeFiles } from '../utils/web3storage';
+import Clock from '../components/Clock';
+import { useClock } from '../contexts/ClockContext';
+import Promotion from '../components/modal/Promotion';
 
 import '../styles/chessground.css';
 import '../styles/chessboard.css';
-
-import queen from '../assets/wQ.svg';
-import rook from '../assets/wR.svg';
-import bishop from '../assets/wB.svg';
-import knight from '../assets/wN.svg';
 
 // ## pass code && game data from context
 function Play({ startColor, vsComputer }) {
   const { connectAccount, loading, account, disconnect, client } =
     useContext(Web3Context);
-  const clockStarted = useRef(false);
+  const isClockStarted = useRef(false);
   const [code, setCode] = useState(
     '0xDc9FC2d9aB39B4dE70Cbae0A095A2a7d2Cf75065/chess/1637481377673',
   );
 
+  const { whiteTime, blackTime, startClock } = useClock();
   const [chess] = useState(new Chess());
-  const [areBothPlayerJoined, setBothPlayersJoined] = useState(false);
+  const [haveBothPlayerJoined, setBothPlayersJoined] = useState(false);
   const [pendingMove, setPendingMove] = useState();
   const [isMyMove, setIsMyMove] = useState(true);
   const [lastMove, setLastMove] = useState();
@@ -43,21 +42,11 @@ function Play({ startColor, vsComputer }) {
       remainingTime: 10,
     },
   });
-  const currDate = new Date();
-
-  const dateToday = `${currDate.getFullYear()}.${
-    currDate.getMonth() + 1 < 10 ? '0' : ''
-  }${currDate.getMonth() + 1}.${
-    currDate.getDate() < 10 ? '0' : ''
-  }${currDate.getDate()}`;
-
-  const UTCDateToday = `${currDate.getFullYear()}.${
-    currDate.getMonth() + 1 < 10 ? '0' : ''
-  }${currDate.getMonth() + 1}.${
-    currDate.getDate() < 10 ? '0' : ''
-  }${currDate.getDate()}`;
-
+  const [trackMoves, setMoves] = useState([]);
   const opponentColor = startColor === 'white' ? 'black' : 'white';
+
+  const home = game[startColor];
+  const opponent = game[opponentColor];
 
   const publishMove = async (code, from, to, moves) => {
     return client.publish(code, {
@@ -71,33 +60,13 @@ function Play({ startColor, vsComputer }) {
   };
 
   async function updateLog() {
+    startClock();
+
+    const moves = chess.history();
+    setMoves(prevMoves => [...prevMoves, moves[moves.length - 1]]);
     const gamePgn = chess.pgn();
     // This pgn has to be saved
     setPgn(gamePgn);
-    const moves = chess.history();
-    const movePairs = [];
-    for (let i = 0; i < moves.length; i += 2) {
-      movePairs.push([
-        moves[i],
-        moves[i + 1] !== undefined ? moves[i + 1] : '',
-      ]);
-    }
-
-    const displayedMoves = [];
-    for (let i = 0; i < movePairs.length; i += 1) {
-      displayedMoves.push(`${i + 1}. ${movePairs[i][0]} ${movePairs[i][1]}`);
-    }
-
-    // ###Add Moves here Imrove this bullshit way of updating move
-
-    // const log = document.getElementById('innerLog');
-    // log.scrollTop = log.scrollHeight;
-    // log.innerHTML = `<p>${displayedMoves.join('<br></br>')}</p>`;
-
-    // if (vsComputer && !clockStarted.current) {
-    //   clockStarted.current = true;
-    //   setStartTime(Date.now())
-    // }
 
     if (chess.in_threefold_repetition()) {
       // drawOffer.drawOffered = true; // draw offer extended to both players if in 3-fold rep
@@ -151,17 +120,11 @@ function Play({ startColor, vsComputer }) {
         'Event',
         'Chess Game',
         'Date',
-        dateToday,
+        Date.now(),
         'White',
         game.white.address,
         'Black',
         game.black.address,
-        'UTCDate',
-        UTCDateToday,
-        'UTCTime',
-        `${currDate.getUTCHours()}:${currDate.getUTCMinutes()}:${
-          currDate.getUTCSeconds.length === 1 ? '0' : ''
-        }${currDate.getUTCSeconds()}`,
         'Result',
         gameResult,
       );
@@ -182,9 +145,6 @@ function Play({ startColor, vsComputer }) {
 
     return '';
   }
-
-  const home = game[startColor];
-  const opponent = game[opponentColor];
 
   // Size of the Chess Board
   const boardsize =
@@ -212,6 +172,7 @@ function Play({ startColor, vsComputer }) {
     };
   };
 
+  //  Random Move for Computer
   const randomMove = () => {
     const moves = chess.moves({ verbose: true });
     const move = moves[Math.floor(Math.random() * moves.length)];
@@ -254,19 +215,6 @@ function Play({ startColor, vsComputer }) {
     }
     updateLog();
   };
-  const formatTime = msecs => {
-    const tenth = parseInt((msecs / 100) % 10, 10);
-    let secs = parseInt((msecs / 1000) % 60, 10);
-    let mins = parseInt(msecs / 60000 /* % 60 */, 10); // % 60 if using hours
-    // let hours = parseInt((msecs / 3600000), 10);
-
-    // hours = hours < 10 ? `0${hours}` : hours;
-    mins = mins < 10 ? `0${mins}` : mins;
-    secs = secs < 10 ? `0${secs}` : secs;
-
-    // return `${hours}:${mins}:${secs}.${tenth}`;
-    return `${mins}:${secs}.${tenth}`;
-  };
 
   const promotion = async e => {
     const from = pendingMove[0];
@@ -277,7 +225,7 @@ function Play({ startColor, vsComputer }) {
     setLastMove([from, to]);
     setSelectVisible(false);
     setChecked(chess.in_check());
-    // setColor(turnColor());
+    setColor(turnColor());
     if (vsComputer) {
       setTimeout(randomMove, 500);
     } else {
@@ -285,26 +233,6 @@ function Play({ startColor, vsComputer }) {
     }
     updateLog();
   };
-  // let i = 0;
-  // useEffect(() => {
-  //   const load = async () => {
-  //     const sub = await client.resend(
-  //       {
-  //         stream:
-  //           '0xDc9FC2d9aB39B4dE70Cbae0A095A2a7d2Cf75065/chess/1637481377673',
-  //         from: {
-  //           timestamp: 1637481377673,
-  //         },
-  //         partition: 1,
-  //       },
-  //       message => {
-  //         console.log(i++, message);
-  //       },
-  //     );
-  //   };
-
-  //   load();
-  // }, [lastMove]);
 
   // useEffect(() => {
   //   const create = async () => {
@@ -335,7 +263,6 @@ function Play({ startColor, vsComputer }) {
     // if (vsComputer) {
     //   setIsMyMove(true);
     // } else {
-    // if (vsComputer) setIsMyMove(true);
     client.subscribe(
       {
         stream: code,
@@ -343,19 +270,10 @@ function Play({ startColor, vsComputer }) {
       (message, metadata) => {
         // note: will also receive own messages
         const msgTime = metadata.messageId.timestamp;
-        const currTime = Date.now();
-        const msgLatency = currTime - msgTime;
-
         console.log(message);
         console.log(metadata);
 
         if (message.type === 'move') {
-          // if (!clockStarted.current) {
-          // game.startTime = msgTime;
-          // clockStarted.current = true; // start clock if not started
-          //   console.log('game has started!');
-          // }
-
           if (color !== turnColor()) {
             //  This Move was played by opponent
             const { move } = message;
@@ -414,7 +332,6 @@ function Play({ startColor, vsComputer }) {
           }
           setBothPlayersJoined(true);
           // ## Perform other steps like closing  modal.
-          clockStarted.current = true;
           // Store or publish the time match begun.
           setMatchStartTime(new Date.now());
         }
@@ -427,29 +344,47 @@ function Play({ startColor, vsComputer }) {
   }, [code, color]);
 
   return (
-    <div className="flex">
-      <Chessground
-        width={boardsize}
-        height={boardsize}
-        turnColor={turnColor()}
-        movable={calcMovable()}
-        lastMove={lastMove}
-        fen={fen}
-        onMove={onMove}
-        highlight={{
-          check: true,
-          lastMove: true,
-        }}
-        premovable={{
-          enabled: true,
-          showDests: true,
-          castle: true,
-        }}
-        check={isChecked}
-        orientation={orientation}
-      />
-      <div className="Moves">
-        <div>Moves Box</div>
+    <div className="flex items-center justify-center mt-16">
+      <div className="flex flex-col">
+        <div id="opponent-timer" className="flex justify-between">
+          <h1>{opponent.address}</h1>
+          <Clock
+            playerTime={opponentColor === 'white' ? whiteTime : blackTime}
+          />
+        </div>
+        <Chessground
+          width={boardsize}
+          height={boardsize}
+          turnColor={turnColor()}
+          movable={calcMovable()}
+          lastMove={lastMove}
+          fen={fen}
+          onMove={onMove}
+          highlight={{
+            check: true,
+            lastMove: true,
+          }}
+          premovable={{
+            enabled: true,
+            showDests: true,
+            castle: true,
+          }}
+          check={isChecked}
+          orientation={orientation}
+        />
+        <div className="flex justify-between">
+          <h1>{home.address}</h1>
+          <Clock playerTime={startColor === 'white' ? whiteTime : blackTime} />
+        </div>
+      </div>
+      {selectVisible && <Promotion promotion={promotion} />}
+      <div className="self-start">
+        <h1>Moves</h1>
+        <div className="grid grid-cols-2 gap-4">
+          {trackMoves?.map(move => (
+            <p>{move}</p>
+          ))}
+        </div>
       </div>
     </div>
   );

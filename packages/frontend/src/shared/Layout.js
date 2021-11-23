@@ -11,7 +11,7 @@ function Layout({ children }) {
   const isOpenPath = location.pathname === '/';
   const isValid = SUPPORTED_NETWORKS.indexOf(chainId) !== -1 || isOpenPath;
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen h-full overflow-x-hidden	">
+    <div className="flex flex-col justify-center items-center min-h-screen h-full overflow-x-hidden">
       <Header />
       {isValid ? children : <ConnectWeb3 />}
     </div>

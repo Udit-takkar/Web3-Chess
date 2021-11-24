@@ -344,7 +344,7 @@ function Play({ startColor, vsComputer }) {
   }, [code, color]);
 
   return (
-    <div className="flex items-center justify-center mt-16">
+    <div className="flex items-center justify-center mt-16 w-full">
       <div className="flex flex-col">
         <div id="opponent-timer" className="flex justify-between">
           <h1>{opponent.address}</h1>
@@ -378,11 +378,14 @@ function Play({ startColor, vsComputer }) {
         </div>
       </div>
       {selectVisible && <Promotion promotion={promotion} />}
-      <div className="self-start">
-        <h1>Moves</h1>
-        <div className="grid grid-cols-2 gap-4">
+      <div className="self-start w-1/5">
+        <h1 className="text-center">Moves</h1>
+        <div
+          className="grid grid-cols-2 gap-4 text-center overflow-y-scroll "
+          style={{ maxHeight: `${boardsize}` }}
+        >
           {trackMoves?.map(move => (
-            <p>{move}</p>
+            <div>{move}</div>
           ))}
         </div>
       </div>

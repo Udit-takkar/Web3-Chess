@@ -1,3 +1,4 @@
+/* eslint-disable */
 // We require the Hardhat Runtime Environment explicitly here. This is optional
 // but useful for running the script in a standalone fashion through `node <script>`.
 //
@@ -17,7 +18,11 @@ async function main() {
   const Greeter = await hre.ethers.getContractFactory("Greeter");
   const greeter = await Greeter.deploy("Hello, Hardhat!");
 
+  const NFT = await hre.ethers.getContractFactory("NFT");
+  const nft = await NFT.deploy("Hello, Hardhat!");
+
   await greeter.deployed();
+  await nft.deployed();
 
   console.log("Greeter deployed to:", greeter.address);
 }

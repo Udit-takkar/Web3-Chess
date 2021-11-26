@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Web3Context } from '../contexts/Web3Context';
 import CreateMatch from '../components/modal/CreateMatch';
 import JoinMatch from '../components/modal/JoinMatch';
@@ -12,7 +12,6 @@ function Home() {
 
   return (
     <div>
-      Test {account}
       {isCreateModalOpen && (
         <CreateMatch setCreateModalOpen={setCreateModalOpen} />
       )}

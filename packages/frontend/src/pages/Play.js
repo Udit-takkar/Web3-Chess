@@ -6,6 +6,7 @@ import { makeFileObjects, storeFiles } from '../utils/web3storage';
 import Clock from '../components/Clock';
 import { useClock } from '../contexts/ClockContext';
 import Promotion from '../components/modal/Promotion';
+import EndGame from '../components/modal/EndGame';
 
 import '../styles/chessground.css';
 import '../styles/chessboard.css';
@@ -38,11 +39,13 @@ function Play({ startColor, vsComputer }) {
       remainingTime: 10,
     },
     black: {
-      address: null,
+      address: '0x759bacE429553bCA40645Da3283de1A105531b11',
       remainingTime: 10,
     },
   });
   const [trackMoves, setMoves] = useState([]);
+  const [isEndGameModalOpen, setEndGameModalOpen] = useState(true);
+
   const opponentColor = startColor === 'white' ? 'black' : 'white';
 
   const home = game[startColor];
@@ -78,44 +81,41 @@ function Play({ startColor, vsComputer }) {
       game[startColor].remainingTime <= 0 ||
       game[opponentColor].remainingTime <= 0
     ) {
-      // gameOver = true;
-      let whiteWon = false;
-      let gameDrawn = false;
+      let winnerAddress = null;
+      let finalComment = '';
+      let isMatchDrawn = false;
 
       if (game[startColor].remainingTime <= 0) {
-        // opponent wins on time
-        whiteWon = startColor === 'black';
+        winnerAddress = game[opponentColor].address;
+        finalComment = ` ${winnerAddress} wins on time. `;
+        chess.header('Termination', 'Time forfeit');
       } else if (game[opponentColor].remainingTime <= 0) {
-        // home wins on time
-        whiteWon = startColor === 'white';
-      }
-
-      let finalComment = '';
-
-      if (
-        game[startColor].remainingTime <= 0 ||
-        game[opponentColor].remainingTime <= 0
-      ) {
-        finalComment = ` ${whiteWon ? 'White' : 'Black'} wins on time. `;
+        winnerAddress = game[startColor].address;
+        finalComment = ` ${winnerAddress} wins on time. `;
         chess.header('Termination', 'Time forfeit');
       } else if (chess.in_stalemate()) {
+        isMatchDrawn = true;
         finalComment = ' Draw by stalemate. ';
       } else if (chess.in_draw() && !chess.insufficient_material()) {
-        gameDrawn = true;
+        isMatchDrawn = true;
         finalComment = ' Draw by 50 move rule. ';
       } else if (chess.in_draw() && chess.insufficient_material()) {
-        gameDrawn = true;
+        isMatchDrawn = true;
         finalComment = ' Draw by insufficent material. ';
       } else if (chess.in_checkmate()) {
-        // check who moved last
-        whiteWon = chess.history.length % 2 === 1; // odd means white moved last
-        finalComment = ` ${whiteWon ? 'White' : 'Black'} wins by checkmate. `;
+        if (chess.history.length % 2 === 1) {
+          winnerAddress = game['white'].address;
+        } else {
+          winnerAddress = game['black'].address;
+        }
+        finalComment = ` ${winnerAddress} wins by checkmate. `;
       } else if (chess.in_threefold_repetition()) {
-        gameDrawn = true;
+        isMatchDrawn = true;
         finalComment = ' Draw by threefold repetition. ';
       }
+
       chess.set_comment(finalComment);
-      const gameResult = gameDrawn ? '1/2-1/2' : whiteWon ? '1-0' : '0-1';
+
       chess.header(
         'Event',
         'Chess Game',
@@ -126,21 +126,27 @@ function Play({ startColor, vsComputer }) {
         'Black',
         game.black.address,
         'Result',
-        gameResult,
+        isMatchDrawn ? 'Match Drawn' : `${winnerAddress} won the match`,
       );
-      // gameData.result = gameResult;
-      // gameData.pgn = chess.pgn();
+
+      const movesPlayed = chess.history();
       const data = {
-        result: gameResult,
+        game,
         pgn: chess.pgn(),
+        moves: movesPlayed,
       };
 
       const uploadedFiles = makeFileObjects(data);
       const uploadedFilesCID = storeFiles(uploadedFiles);
+      //  Save to Chain here
 
-      return uploadedFilesCID;
-      // ## save data to chain here and start minting.
-      // }
+      //  Start End game here
+      if (
+        !vsComputer &&
+        winnerAddress.toLowerCase() === home.address.toLowerCase()
+      ) {
+        setEndGameModalOpen(true);
+      }
     }
 
     return '';
@@ -378,6 +384,9 @@ function Play({ startColor, vsComputer }) {
         </div>
       </div>
       {selectVisible && <Promotion promotion={promotion} />}
+      {isEndGameModalOpen && (
+        <EndGame setOpen={setEndGameModalOpen} opponent={opponent.address} />
+      )}
       <div className="self-start w-1/5">
         <h1 className="text-center">Moves</h1>
         <div

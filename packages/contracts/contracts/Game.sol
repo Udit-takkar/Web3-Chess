@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity ^0.8.4;
 
-import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
-import "../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "../node_modules/@OpenZeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import "hardhat/console.sol";
 
-contract Game is ReentrancyGuard {
+// TODO: Add Events to the game
+contract GameContract is ReentrancyGuard {
   using SafeMath for uint256;
 
   using Counters for Counters.Counter;
@@ -30,10 +31,9 @@ contract Game is ReentrancyGuard {
   }
 
   //   Player 1 who creates game and player 2 is opponent
-
   struct Game {
-    address player1;
-    address player2;
+    address playerOne;
+    address playerTwo;
     uint256 stake;
     string gameCode;
     string beforeMatchDataURI;
@@ -43,9 +43,9 @@ contract Game is ReentrancyGuard {
   }
 
   mapping(address => uint256) public playerBalances;
-  mapping(address => Game) public games;
+  mapping(string => Game) public games;
 
-// Player 1 creates a game
+  // Player 1 creates a game
   function startGame(
     string memory gameCode,
     string memory beforeMatchDataURI,
@@ -63,7 +63,7 @@ contract Game is ReentrancyGuard {
 
     playerBalances[msg.sender] = playerBalances[msg.sender].sub(stake);
 
-    games[gameCode].playerOneHash = gameHash;
+    games[gameCode].gameCode = gameCode;
     games[gameCode].playerOne = msg.sender;
     games[gameCode].playerTwo = opponent;
     games[gameCode].stake = stake;
@@ -71,7 +71,7 @@ contract Game is ReentrancyGuard {
     games[gameCode].beforeMatchDataURI = beforeMatchDataURI;
   }
 
-//  Player 2 joins the game
+  //  Player 2 joins the game
   function participateGame(string memory gameCode) external {
     require(
       games[gameCode].playerTwo == msg.sender,
@@ -89,16 +89,28 @@ contract Game is ReentrancyGuard {
     );
 
     playerBalances[msg.sender] = playerBalances[msg.sender].sub(gameStake);
-
     games[gameCode].status = GameStatus.ongoing;
   }
 
-//   end game 
-function endGame(string memory gameCode) external {
-  require(games[gameCode].status == GameStatus.ongoing,"Match did not started or invalid code");
-  
+  //   finish the game
+  function endGame(
+    string memory gameCode,
+    string memory afterMatchDataURI,
+    GameOutcome outcome
+  ) external {
+    require(
+      games[gameCode].status == GameStatus.ongoing,
+      "Match did not started or invalid code"
+    );
+    require(
+      games[gameCode].playerOne == msg.sender,
+      "Only Players can end the game"
+    );
 
-}
+    games[gameCode].status = GameStatus.ended;
+    games[gameCode].afterMatchDataURI = afterMatchDataURI;
+    games[gameCode].outcome = outcome;
+  }
 
   function withdraw() external nonReentrant {
     uint256 playerBalance = playerBalances[msg.sender];
@@ -110,6 +122,7 @@ function endGame(string memory gameCode) external {
   }
 
   function deposit() external payable {
+    require(msg.value > 0, "Please Deposit a valid amount greater than zero");
     playerBalances[msg.sender] = playerBalances[msg.sender].add(msg.value);
   }
 

@@ -5,13 +5,14 @@ import ModalContainer from '../../shared/ModalContainer';
 import { saveData } from '../../utils/ipfsClient';
 import { ethers } from 'ethers';
 import { useWeb3 } from '../../contexts/Web3Context';
+import NFTContract from '../../contracts/NFT.json';
 
-const nftaddress = '0x03771044F5f3282E78D9612e76560948075De72D';
+const nftaddress = '0x8f2384375203587Ee33827BD55F59daDDBf8F58f';
 
 function EndGame({ setOpen, opponent }) {
   const canvasRef = useRef(null);
   const [finalImg, setImg] = useState(null);
-  const { account } = useWeb3();
+  const { signer } = useWeb3();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,22 +39,23 @@ function EndGame({ setOpen, opponent }) {
   }, []);
 
   const handleClick = async () => {
-    //   const imgCID = await saveData(finalImg);
-    //   const metadata = {
-    //     description: `awarded for beating ${opponent} in chess by  Web3Chess `,
-    //     image: imgCID,
-    //   };
-    //   const stringifyData = await JSON.stringify(metadata);
-    //   const nftCID = await saveData(stringifyData);
-    //   const tokenURI = `https://ipfs.infura.io/ipfs/${nftCID}`;
-    //   let contract = new ethers.Contract(nftaddress, account);
-    //   let transaction = await contract.createToken(tokenURI);
-    //   let tx = await transaction.wait();
-    //   console.log(tx);
-    //   let event = tx.events[0];
-    //   let value = event.args[2];
-    //   let tokenId = value.toNumber();
-    //   console.log(tokenId);
+    const imgCID = await saveData(finalImg);
+    const metadata = {
+      description: `awarded for beating ${opponent} in chess by  Web3Chess `,
+      image: imgCID,
+    };
+    const stringifyData = await JSON.stringify(metadata);
+    const nftCID = await saveData(stringifyData);
+    const tokenURI = `https://ipfs.infura.io/ipfs/${nftCID}`;
+
+    let contract = new ethers.Contract(nftaddress, NFTContract.abi, signer);
+
+    let transaction = await contract.createToken(tokenURI);
+    let tx = await transaction.wait();
+
+    let event = tx.events[0];
+    let value = event.args[2];
+    let tokenId = value.toNumber();
   };
 
   return (

@@ -35,7 +35,9 @@ export const useWeb3 = () => useContext(Web3Context);
 
 export const Web3ContextProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
-  const [{ account, provider, chainId, client }, setWeb3] = useState({});
+  const [{ account, provider, chainId, client, signer }, setWeb3] = useState(
+    {},
+  );
 
   const setWeb3Provider = async (prov, initialCall = false) => {
     if (prov) {
@@ -46,7 +48,10 @@ export const Web3ContextProvider = ({ children }) => {
       const gotChainId = Number(prov.chainId);
       const streamr = await new StreamrClient({
         // restUrl: 'http://localhost/api/v1', // if you want to test locally in the streamr-docker-dev environment
-        auth: { ethereum: gotProvider.provider },
+        // auth: { ethereum: gotProvider.provider },
+        auth: {
+          privateKey: process.env.REACT_APP_PRIVATE_KEY,
+        },
         publishWithSignature: 'never',
         autoConnect: 'true',
       });
@@ -60,6 +65,7 @@ export const Web3ContextProvider = ({ children }) => {
           chainId: gotChainId,
           account: gotAccount,
           client: streamr,
+          signer,
         }));
       } else {
         setWeb3(_provider => ({
@@ -135,6 +141,7 @@ export const Web3ContextProvider = ({ children }) => {
         connectAccount: connectWeb3,
         disconnect,
         client,
+        signer,
       }}
     >
       {children}

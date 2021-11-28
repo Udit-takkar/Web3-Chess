@@ -38,14 +38,15 @@ function CreateMatch({ setCreateModalOpen }) {
       player1: account,
       player1Color: 'white',
       player2: opponentAddress,
-      player2Color: 'bloack',
+      player2Color: 'black',
       stake: data.amount,
+      time: 600000,
       createdBy: account,
     };
     const uploadedFiles = await makeFileObjects(beforeMatchData);
     const beforeMatchCID = await storeFiles(uploadedFiles);
     const beforeMatchDataURI = `https://ipfs.infura.io/ipfs/${beforeMatchCID}`;
-
+    console.log(beforeMatchDataURI);
     // Creating Stream streams for publishing and subscribing match data
     const gameCode = `${account}/${Date.now()}`;
     const stream = await client.createStream({
@@ -72,11 +73,11 @@ function CreateMatch({ setCreateModalOpen }) {
       price,
     );
     await transaction.wait();
-
     navigate('/play', {
       state: {
         gameData: {
           code: gameCode,
+          startColor: 'white',
           white: {
             address: account,
             remainingTime: 600000,

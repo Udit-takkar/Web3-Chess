@@ -40,6 +40,7 @@ function Play({ startColor, vsComputer }) {
   const [matchStartTime, setMatchStartTime] = useState(null);
   const [game, setGame] = useState({
     code: null,
+    startColor: null,
     white: {
       address: null,
       remainingTime: 10,
@@ -58,7 +59,6 @@ function Play({ startColor, vsComputer }) {
   const opponent = game[opponentColor];
 
   const publishMove = async (code, from, to, moves) => {
-    console.log('Kuch toh hua hain');
     return client.publish(code, {
       type: 'move',
       move: { from, to },

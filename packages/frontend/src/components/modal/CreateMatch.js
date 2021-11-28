@@ -3,16 +3,91 @@ import Portal from '../../shared/Portal';
 import { useForm } from 'react-hook-form';
 import Select from 'react-select';
 import ModalContainer from '../../shared/ModalContainer';
+import CloseBtn from '../../components/CloseBtn';
+import { useWeb3 } from '../../contexts/Web3Context';
+import { ethers } from 'ethers';
+import { makeFileObjects, storeFiles } from '../../utils/web3storage';
+// import { StorageNode } from 'streamr-client';
+import { useNavigate } from 'react-router-dom';
 
 function CreateMatch({ setCreateModalOpen }) {
+  const navigate = useNavigate();
+  const checkAddress = add => ethers.utils.isAddress(add);
   const {
     register,
     handleSubmit,
     watch,
+    setError,
     formState: { errors },
   } = useForm();
+  const { gameContractProvider, gameContract, account, client } = useWeb3();
   const onSubmit = async data => {
     const fields = { fields: data };
+
+    const balance = await gameContractProvider.getPlayerBalance(account);
+    if (data.amount > balance) {
+      setError('amount', {
+        type: 'manual',
+        message: 'Your Balance is less than the amount',
+      });
+    }
+
+    //  Saving Data To Web3 Storage
+    const opponentAddress = data.address;
+    const beforeMatchData = {
+      player1: account,
+      player1Color: 'white',
+      player2: opponentAddress,
+      player2Color: 'bloack',
+      stake: data.amount,
+      createdBy: account,
+    };
+    const uploadedFiles = await makeFileObjects(beforeMatchData);
+    const beforeMatchCID = await storeFiles(uploadedFiles);
+    const beforeMatchDataURI = `https://ipfs.infura.io/ipfs/${beforeMatchCID}`;
+
+    // Creating Stream streams for publishing and subscribing match data
+    const gameCode = `${account}/${Date.now()}`;
+    const stream = await client.createStream({
+      id: gameCode,
+    });
+
+    // Setting up permission for streamr streams
+    if (!(await stream.hasPermission('stream_get', null))) {
+      await stream.grantPermission('stream_get', null);
+    }
+    if (!(await stream.hasPermission('stream_publish', opponentAddress))) {
+      await stream.grantPermission('stream_publish', opponentAddress);
+    }
+    if (!(await stream.hasPermission('stream_subscribe', null))) {
+      await stream.grantPermission('stream_subscribe', null);
+    }
+
+    // locking the values in the contract
+    const price = ethers.utils.parseUnits(data.amount.toString(), 'ether');
+    const transaction = await gameContract.startGame(
+      gameCode,
+      beforeMatchDataURI,
+      data.address,
+      price,
+    );
+    await transaction.wait();
+
+    navigate('/play', {
+      state: {
+        gameData: {
+          code: gameCode,
+          white: {
+            address: account,
+            remainingTime: 600000,
+          },
+          black: {
+            address: opponentAddress,
+            remainingTime: 600000,
+          },
+        },
+      },
+    });
   };
   const options = [{ value: '10', label: '10 Minutes' }];
   const matchOptions = [{ value: 'standard', label: 'Standard' }];
@@ -25,20 +100,7 @@ function CreateMatch({ setCreateModalOpen }) {
         className="absolute top-2 right-2 h-6"
         onClick={() => setCreateModalOpen(false)}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
+        <CloseBtn />
       </div>
 
       <form
@@ -66,6 +128,7 @@ function CreateMatch({ setCreateModalOpen }) {
           autoFocus
           {...register('address', {
             required: 'Please enter a valid address',
+            validate: checkAddress,
           })}
         />
         {errors.address && (
@@ -80,9 +143,11 @@ function CreateMatch({ setCreateModalOpen }) {
         <input
           className="border-solid border-gray-300 border py-2 px-4 w-full rounded text-gray-700"
           name="amount"
+          type="number"
           placeholder="Enter amount"
           autoFocus
           {...register('amount', {
+            valueAsNumber: true,
             required: 'Please enter a valid amount',
           })}
         />

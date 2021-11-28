@@ -9,10 +9,15 @@ import React, {
   useState,
 } from 'react';
 import Web3 from 'web3';
-
 import { SUPPORTED_NETWORKS } from '../utils/constants';
+import NFTContract from '../contracts/NFT.json';
+import GAMEContract from '../contracts/GameContract.json';
 import { getRpcUrl, logError } from '../utils/helpers';
+
 const StreamrClient = require('streamr-client');
+
+const nftaddress = '0x3d7285fB95677B9e128f00012106323ED9DA223E';
+const gameaddress = '0xF66Df7bcF4Ae78C8806259dBdD97cFf9732eCe20';
 
 const providerOptions = {
   walletconnect: {
@@ -35,9 +40,20 @@ export const useWeb3 = () => useContext(Web3Context);
 
 export const Web3ContextProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
-  const [{ account, provider, chainId, client, signer }, setWeb3] = useState(
-    {},
-  );
+  const [
+    {
+      account,
+      provider,
+      chainId,
+      client,
+      signer,
+      nftContract,
+      nftContractProvider,
+      gameContract,
+      gameContractProvider,
+    },
+    setWeb3,
+  ] = useState({});
 
   const setWeb3Provider = async (prov, initialCall = false) => {
     if (prov) {
@@ -55,9 +71,30 @@ export const Web3ContextProvider = ({ children }) => {
         publishWithSignature: 'never',
         autoConnect: 'true',
       });
+      const signer = gotProvider.getSigner();
+      const nftContract = new ethers.Contract(
+        nftaddress,
+        NFTContract.abi,
+        signer,
+      );
+      const nftContractProvider = new ethers.Contract(
+        nftaddress,
+        NFTContract.abi,
+        gotProvider,
+      );
+
+      const gameContract = new ethers.Contract(
+        gameaddress,
+        GAMEContract.abi,
+        signer,
+      );
+      const gameContractProvider = new ethers.Contract(
+        gameaddress,
+        GAMEContract.abi,
+        gotProvider,
+      );
 
       if (initialCall) {
-        const signer = gotProvider.getSigner();
         const gotAccount = await signer.getAddress();
         setWeb3(_provider => ({
           ..._provider,
@@ -65,7 +102,10 @@ export const Web3ContextProvider = ({ children }) => {
           chainId: gotChainId,
           account: gotAccount,
           client: streamr,
-          signer,
+          nftContract,
+          nftContractProvider,
+          gameContract,
+          gameContractProvider,
         }));
       } else {
         setWeb3(_provider => ({
@@ -142,6 +182,10 @@ export const Web3ContextProvider = ({ children }) => {
         disconnect,
         client,
         signer,
+        nftContract,
+        nftContractProvider,
+        gameContract,
+        gameContractProvider,
       }}
     >
       {children}

@@ -7,18 +7,23 @@ import Clock from '../components/Clock';
 import { useClock } from '../contexts/ClockContext';
 import Promotion from '../components/modal/Promotion';
 import EndGame from '../components/modal/EndGame';
+import { v4 as uuidv4 } from 'uuid';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import '../styles/chessground.css';
 import '../styles/chessboard.css';
 
 // ## pass code && game data from context
 function Play({ startColor, vsComputer }) {
+  const navigate = useNavigate();
+
   const { connectAccount, loading, account, disconnect, client } =
     useContext(Web3Context);
   const isClockStarted = useRef(false);
   const [code, setCode] = useState(
     '0xDc9FC2d9aB39B4dE70Cbae0A095A2a7d2Cf75065/chess/1637481377673',
   );
+  const { state } = useLocation();
 
   const { whiteTime, blackTime, startClock } = useClock();
   const [chess] = useState(new Chess());
@@ -34,6 +39,7 @@ function Play({ startColor, vsComputer }) {
   const [pgn, setPgn] = useState(null);
   const [matchStartTime, setMatchStartTime] = useState(null);
   const [game, setGame] = useState({
+    code: null,
     white: {
       address: null,
       remainingTime: 10,
@@ -44,7 +50,7 @@ function Play({ startColor, vsComputer }) {
     },
   });
   const [trackMoves, setMoves] = useState([]);
-  const [isEndGameModalOpen, setEndGameModalOpen] = useState(true);
+  const [isEndGameModalOpen, setEndGameModalOpen] = useState(false);
 
   const opponentColor = startColor === 'white' ? 'black' : 'white';
 
@@ -52,6 +58,7 @@ function Play({ startColor, vsComputer }) {
   const opponent = game[opponentColor];
 
   const publishMove = async (code, from, to, moves) => {
+    console.log('Kuch toh hua hain');
     return client.publish(code, {
       type: 'move',
       move: { from, to },
@@ -63,6 +70,7 @@ function Play({ startColor, vsComputer }) {
   };
 
   async function updateLog() {
+    console.log('chal le bhai');
     startClock();
 
     const moves = chess.history();
@@ -205,8 +213,8 @@ function Play({ startColor, vsComputer }) {
       }
     }
 
-    const allMoves = chess.history({ verbose: true });
-    await publishMove(code, from, to, allMoves);
+    const allMoves = chess.history({ verbose: true }) ?? [];
+    // await publishMove(code, from, to, allMoves);
 
     if (chess.move({ from, to, promotion: 'q' })) {
       setFen(chess.fen());
@@ -216,7 +224,7 @@ function Play({ startColor, vsComputer }) {
       if (vsComputer) {
         setTimeout(randomMove, 500);
       } else {
-        publishMove(code, from, to, allMoves);
+        await publishMove(code, from, to, allMoves);
       }
     }
     updateLog();
@@ -240,115 +248,92 @@ function Play({ startColor, vsComputer }) {
     updateLog();
   };
 
-  // useEffect(() => {
-  //   const create = async () => {
-  //     const time = Date.now();
-  // let ensDecoded = await provider.resolveName(friendAddress);
-  // const stream = await client.createStream({
-  // id: `${address}/game`,
-  // game ID is starting time of game
-  //   id: `${account}/chess/${time}`, // or address/foo/bar or mydomain.eth/foo/bar
-  // });
-  // await stream.addToStorageNode(StorageNode.STREAMR_GERMANY); // store data
-  // everyone can get and subscribe to the stream (for spectating)
-  // if (!(await stream.hasPermission('stream_get', null))) {
-  //   await stream.grantPermission('stream_get', null);
-  // }
-  // if (!(await stream.hasPermission('stream_publish', ensDecoded))) {
-  //   await stream.grantPermission('stream_publish', ensDecoded);
-  // }
-  //   if (!(await stream.hasPermission('stream_subscribe', null))) {
-  //     await stream.grantPermission('stream_subscribe', null);
-  //   }
-  //   setCode(stream);
-  // };
-  // create();
-  // }, []);
-
   useEffect(() => {
     // if (vsComputer) {
     //   setIsMyMove(true);
     // } else {
-    client.subscribe(
-      {
-        stream: code,
-      },
-      (message, metadata) => {
-        // note: will also receive own messages
-        const msgTime = metadata.messageId.timestamp;
-        console.log(message);
-        console.log(metadata);
+    if (!state) {
+      navigate('/');
+    } else {
+      client.subscribe(
+        {
+          stream: code,
+        },
+        (message, metadata) => {
+          // note: will also receive own messages
+          const msgTime = metadata.messageId.timestamp;
+          console.log(message);
+          console.log(metadata);
 
-        if (message.type === 'move') {
-          if (color !== turnColor()) {
-            //  This Move was played by opponent
-            const { move } = message;
-            const { from, to, promotion } = move;
-            const moves = chess.moves({ verbose: true }); // Returns a list of legal moves from the current position
+          if (message.type === 'move') {
+            if (color !== turnColor()) {
+              //  This Move was played by opponent
+              const { move } = message;
+              const { from, to, promotion } = move;
+              const moves = chess.moves({ verbose: true }); // Returns a list of legal moves from the current position
 
-            //  Check if promotion is possible
-            for (let i = 0, len = moves.length; i < len; i += 1) {
-              if (
-                moves[i].flags.indexOf('p') !== -1 &&
-                moves[i].from === from
-              ) {
-                setPendingMove([from, to]);
-                if (turnColor() === startColor) {
-                  setSelectVisible(true); // only person playing move can see promotion
-                  return;
+              //  Check if promotion is possible
+              for (let i = 0, len = moves.length; i < len; i += 1) {
+                if (
+                  moves[i].flags.indexOf('p') !== -1 &&
+                  moves[i].from === from
+                ) {
+                  setPendingMove([from, to]);
+                  if (turnColor() === startColor) {
+                    setSelectVisible(true); // only person playing move can see promotion
+                    return;
+                  }
                 }
               }
-            }
 
-            const moveResult = chess.move({ from, to, promotion });
+              const moveResult = chess.move({ from, to, promotion });
 
-            if (moveResult) {
-              // move successful
-              setFen(chess.fen());
-              setLastMove([from, to]);
-              setChecked(chess.in_check());
+              if (moveResult) {
+                // move successful
+                setFen(chess.fen());
+                setLastMove([from, to]);
+                setChecked(chess.in_check());
+              }
+              setIsMyMove(true); // can play now
+              updateLog();
+            } else {
+              //  It was My Move
+              setIsMyMove(false);
             }
-            setIsMyMove(true); // can play now
-            updateLog();
-          } else {
-            //  It was My Move
-            setIsMyMove(false);
+          } else if (message.type === 'command') {
+            // ## Add commands for resign and draw offered
+            if (message.command === 'offer_draw') {
+              // drawOffer.drawOffered = true;
+            }
           }
-        } else if (message.type === 'command') {
-          // ## Add commands for resign and draw offered
-          if (message.command === 'offer_draw') {
-            // drawOffer.drawOffered = true;
+          // now type could be join, start, ready
+          else if (
+            message.type === 'join' &&
+            message.from.toLowerCase() !== home.address.toLowerCase()
+          ) {
+            const msg = {
+              type: 'start',
+              from: home.address,
+              time: Date.now(),
+            };
+            client.publish(code, msg);
+          } else if (message.type === 'start') {
+            // Check if i am the first move
+            if (startColor === 'white') {
+              setIsMyMove(true);
+            }
+            setBothPlayersJoined(true);
+            // ## Perform other steps like closing  modal.
+            // Store or publish the time match begun.
+            setMatchStartTime(new Date.now());
           }
-        }
-        // now type could be join, start, ready
-        else if (
-          message.type === 'join' &&
-          message.from.toLowerCase() !== home.address.toLowerCase()
-        ) {
-          const msg = {
-            type: 'start',
-            from: home.address,
-            time: Date.now(),
-          };
-          client.publish(code, msg);
-        } else if (message.type === 'start') {
-          // Check if i am the first move
-          if (startColor === 'white') {
-            setIsMyMove(true);
-          }
-          setBothPlayersJoined(true);
-          // ## Perform other steps like closing  modal.
-          // Store or publish the time match begun.
-          setMatchStartTime(new Date.now());
-        }
-      },
-    );
-    // }
+        },
+      );
+    }
     return function cleanup() {
       client.unsubscribe(code);
     };
   }, [code, color]);
-
   return (
     <div className="flex items-center justify-center mt-16 w-full">
       <div className="flex flex-col">
@@ -390,12 +375,12 @@ function Play({ startColor, vsComputer }) {
       <div className="self-start w-1/5">
         <h1 className="text-center">Moves</h1>
         <div
-          className="grid grid-cols-2 gap-4 text-center overflow-y-scroll "
           style={{ maxHeight: `${boardsize}` }}
+          className="grid grid-cols-2 gap-4 text-center overflow-y-scroll"
         >
-          {trackMoves?.map(move => (
-            <div>{move}</div>
-          ))}
+          {trackMoves?.map(move => {
+            return <div key={uuidv4()}>{move}</div>;
+          })}
         </div>
       </div>
     </div>

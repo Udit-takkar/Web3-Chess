@@ -2,6 +2,7 @@ import React from 'react';
 import Portal from '../../shared/Portal';
 import { useForm } from 'react-hook-form';
 import ModalContainer from '../../shared/ModalContainer';
+import CloseBtn from '../../components/CloseBtn';
 
 function JoinMatch({ setJoinModalOpen }) {
   const {
@@ -20,20 +21,7 @@ function JoinMatch({ setJoinModalOpen }) {
         className="absolute top-2 right-2 h-6"
         onClick={() => setJoinModalOpen(false)}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
+        <CloseBtn />
       </div>
       <form
         className="max-w-xl m-auto py-10 px-12 border"

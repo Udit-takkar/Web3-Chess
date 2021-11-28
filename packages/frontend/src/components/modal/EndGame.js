@@ -6,13 +6,14 @@ import { saveData } from '../../utils/ipfsClient';
 import { ethers } from 'ethers';
 import { useWeb3 } from '../../contexts/Web3Context';
 import NFTContract from '../../contracts/NFT.json';
+import CloseBtn from '../../components/CloseBtn';
 
 const nftaddress = '0x8f2384375203587Ee33827BD55F59daDDBf8F58f';
 
 function EndGame({ setOpen, opponent }) {
   const canvasRef = useRef(null);
   const [finalImg, setImg] = useState(null);
-  const { signer } = useWeb3();
+  const { nftContract } = useWeb3();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -48,9 +49,7 @@ function EndGame({ setOpen, opponent }) {
     const nftCID = await saveData(stringifyData);
     const tokenURI = `https://ipfs.infura.io/ipfs/${nftCID}`;
 
-    let contract = new ethers.Contract(nftaddress, NFTContract.abi, signer);
-
-    let transaction = await contract.createToken(tokenURI);
+    let transaction = await nftContract.createToken(tokenURI);
     let tx = await transaction.wait();
 
     let event = tx.events[0];
@@ -64,20 +63,7 @@ function EndGame({ setOpen, opponent }) {
         className="absolute top-2 right-2 h-6 cursor-pointer"
         onClick={() => setOpen(false)}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
+        <CloseBtn />
       </div>
       <div className="flex flex-col bg-yellow-100	 p-4">
         <canvas ref={canvasRef} width={800} height={600} />

@@ -7,7 +7,7 @@ function Home() {
   const { connectAccount, loading, account, disconnect } =
     useContext(Web3Context);
 
-  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isCreateModalOpen, setCreateModalOpen] = useState(true);
   const [isJoinMatchModalOpen, setJoinModalOpen] = useState(false);
 
   return (

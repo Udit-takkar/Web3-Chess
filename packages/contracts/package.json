@@ -2,7 +2,8 @@
   "name": "hardhat-project",
   "scripts": {
     "lint": "solhint contracts/*.sol",
-    "prettier": "prettier --write 'contracts/**/*.sol'"
+    "prettier": "prettier --write 'contracts/**/*.sol'",
+    "deploy": "npx hardhat run scripts/deploy.js  --network mumbai"
   },
   "devDependencies": {
     "prettier-plugin-solidity": "^1.0.0-beta.19"

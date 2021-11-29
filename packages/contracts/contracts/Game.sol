@@ -13,7 +13,6 @@ contract GameContract is ReentrancyGuard {
   using SafeMath for uint256;
 
   using Counters for Counters.Counter;
-  Counters.Counter private _itemIds;
   Counters.Counter private _gameIds;
 
   event GetGameOutcome(GameOutcome);
@@ -132,5 +131,17 @@ contract GameContract is ReentrancyGuard {
     returns (uint256 playerBalance)
   {
     return playerBalances[playerAddress];
+  }
+
+  function getGameDetails(string memory gameCode)
+    external
+    view
+    returns (string memory URI)
+  {
+    string
+      memory tmp = "https://ipfs.infura.io/ipfs/bafybeie7q7hidfgv5fvhhcx7z6lxox27eakaqpsh3v7lgw4op5qisfh474";
+    return tmp;
+    // require(gameCode[gameCode].status==GameStatus.started,"Invalid Code");
+    // return games[gameCode].beforeMatchDataURI;
   }
 }

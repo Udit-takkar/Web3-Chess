@@ -98,7 +98,7 @@ function CreateMatch({ setCreateModalOpen }) {
         Create a Match
       </h1>
       <div
-        className="absolute top-2 right-2 h-6"
+        className="absolute top-2 right-2 h-6 cursor-pointer"
         onClick={() => setCreateModalOpen(false)}
       >
         <CloseBtn />

@@ -50,11 +50,11 @@ function JoinMatch({ setJoinModalOpen }) {
 
       const transaction = await gameContract.participateGame(code);
       await transaction.wait();
-      const msg = {
-        type: 'join',
-        from: account,
-      };
-      await client.publish(code, msg);
+      // const msg = {
+      //   type: 'join',
+      //   from: account,
+      // };
+      // await client.publish(code, msg);
 
       navigate('/play', {
         state: {
@@ -80,7 +80,7 @@ function JoinMatch({ setJoinModalOpen }) {
     <ModalContainer>
       <h1 className="text-center text-4xl font-semibold mt-10">Join Match</h1>
       <div
-        className="absolute top-2 right-2 h-6"
+        className="absolute top-2 right-2 h-6 cursor-pointer"
         onClick={() => setJoinModalOpen(false)}
       >
         <CloseBtn />

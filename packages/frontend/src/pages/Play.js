@@ -7,8 +7,9 @@ import Clock from '../components/Clock';
 import { useClock } from '../contexts/ClockContext';
 import Promotion from '../components/modal/Promotion';
 import EndGame from '../components/modal/EndGame';
-import { v4 as uuidv4 } from 'uuid';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { MemoizedMoves } from '../components/Moves';
+import PageContainer from '../shared/PageContainer';
 
 import '../styles/chessground.css';
 import '../styles/chessboard.css';
@@ -16,16 +17,14 @@ import '../styles/chessboard.css';
 // ## pass code && game data from context
 function Play({ startColor, vsComputer }) {
   const navigate = useNavigate();
-
   const { connectAccount, loading, account, disconnect, client } =
     useContext(Web3Context);
   const isClockStarted = useRef(false);
   const [code, setCode] = useState(
-    '0xDc9FC2d9aB39B4dE70Cbae0A095A2a7d2Cf75065/chess/1637481377673',
+    '0xDc9FC2d9aB39B4dE70Cbae0A095A2a7d2Cf75065/1638129179083',
   );
   const { state } = useLocation();
-
-  const { whiteTime, blackTime, startClock } = useClock();
+  const { startClock, whiteTime, blackTime } = useClock();
   const [chess] = useState(new Chess());
   const [haveBothPlayerJoined, setBothPlayersJoined] = useState(false);
   const [pendingMove, setPendingMove] = useState();
@@ -58,19 +57,17 @@ function Play({ startColor, vsComputer }) {
   const home = game[startColor];
   const opponent = game[opponentColor];
 
-  const publishMove = async (code, from, to, moves) => {
-    return client.publish(code, {
+  const publishMove = async (code, from, to) => {
+    client.publish(code, {
       type: 'move',
       move: { from, to },
       from: game[startColor].address,
       time: Date.now(),
       fen: chess.fen(),
-      moves,
     });
   };
 
   async function updateLog() {
-    console.log('chal le bhai');
     startClock();
 
     const moves = chess.history();
@@ -84,21 +81,17 @@ function Play({ startColor, vsComputer }) {
       //  ### End this Match Here and return
     }
 
-    if (
-      chess.game_over() ||
-      game[startColor].remainingTime <= 0 ||
-      game[opponentColor].remainingTime <= 0
-    ) {
+    if (chess.game_over() || whiteTime <= 0 || blackTime <= 0) {
       let winnerAddress = null;
       let finalComment = '';
       let isMatchDrawn = false;
 
-      if (game[startColor].remainingTime <= 0) {
-        winnerAddress = game[opponentColor].address;
+      if (whiteTime <= 0) {
+        winnerAddress = game['black'].address;
         finalComment = ` ${winnerAddress} wins on time. `;
         chess.header('Termination', 'Time forfeit');
-      } else if (game[opponentColor].remainingTime <= 0) {
-        winnerAddress = game[startColor].address;
+      } else if (blackTime <= 0) {
+        winnerAddress = game['black'].address;
         finalComment = ` ${winnerAddress} wins on time. `;
         chess.header('Termination', 'Time forfeit');
       } else if (chess.in_stalemate()) {
@@ -213,8 +206,7 @@ function Play({ startColor, vsComputer }) {
       }
     }
 
-    const allMoves = chess.history({ verbose: true }) ?? [];
-    // await publishMove(code, from, to, allMoves);
+    publishMove(code, from, to);
 
     if (chess.move({ from, to, promotion: 'q' })) {
       setFen(chess.fen());
@@ -224,11 +216,15 @@ function Play({ startColor, vsComputer }) {
       if (vsComputer) {
         setTimeout(randomMove, 500);
       } else {
-        await publishMove(code, from, to, allMoves);
+        publishMove(code, from, to);
       }
     }
     updateLog();
   };
+
+  client.on('connected', () => {
+    console.log('Yeah, we are connected now!');
+  });
 
   const promotion = async e => {
     const from = pendingMove[0];
@@ -243,7 +239,7 @@ function Play({ startColor, vsComputer }) {
     if (vsComputer) {
       setTimeout(randomMove, 500);
     } else {
-      await publishMove(code, from, to, chess.history({ verbose: true }));
+      publishMove(code, from, to, chess.history({ verbose: true }));
     }
     updateLog();
   };
@@ -252,138 +248,134 @@ function Play({ startColor, vsComputer }) {
     // if (vsComputer) {
     //   setIsMyMove(true);
     // } else {
-    if (!state) {
-      navigate('/');
-    } else {
-      client.subscribe(
-        {
-          stream: code,
-        },
-        (message, metadata) => {
-          // note: will also receive own messages
-          const msgTime = metadata.messageId.timestamp;
-          console.log(message);
-          console.log(metadata);
+    // if (!state) {
+    //   navigate('/');
+    // } else {
+    client.subscribe(
+      {
+        stream: code,
+      },
+      (message, metadata) => {
+        // note: will also receive own messages
+        const msgTime = metadata.messageId.timestamp;
+        console.log(message);
+        console.log(metadata);
 
-          if (message.type === 'move') {
-            if (color !== turnColor()) {
-              //  This Move was played by opponent
-              const { move } = message;
-              const { from, to, promotion } = move;
-              const moves = chess.moves({ verbose: true }); // Returns a list of legal moves from the current position
+        if (message.type === 'move') {
+          if (color !== turnColor()) {
+            //  This Move was played by opponent
+            const { move } = message;
+            const { from, to, promotion } = move;
+            const moves = chess.moves({ verbose: true }); // Returns a list of legal moves from the current position
 
-              //  Check if promotion is possible
-              for (let i = 0, len = moves.length; i < len; i += 1) {
-                if (
-                  moves[i].flags.indexOf('p') !== -1 &&
-                  moves[i].from === from
-                ) {
-                  setPendingMove([from, to]);
-                  if (turnColor() === startColor) {
-                    setSelectVisible(true); // only person playing move can see promotion
-                    return;
-                  }
+            //  Check if promotion is possible
+            for (let i = 0, len = moves.length; i < len; i += 1) {
+              if (
+                moves[i].flags.indexOf('p') !== -1 &&
+                moves[i].from === from
+              ) {
+                setPendingMove([from, to]);
+                if (turnColor() === startColor) {
+                  setSelectVisible(true); // only person playing move can see promotion
+                  return;
                 }
               }
+            }
 
-              const moveResult = chess.move({ from, to, promotion });
+            const moveResult = chess.move({ from, to, promotion });
 
-              if (moveResult) {
-                // move successful
-                setFen(chess.fen());
-                setLastMove([from, to]);
-                setChecked(chess.in_check());
-              }
-              setIsMyMove(true); // can play now
-              updateLog();
-            } else {
-              //  It was My Move
-              setIsMyMove(false);
+            if (moveResult) {
+              // move successful
+              setFen(chess.fen());
+              setLastMove([from, to]);
+              setChecked(chess.in_check());
             }
-          } else if (message.type === 'command') {
-            // ## Add commands for resign and draw offered
-            if (message.command === 'offer_draw') {
-              // drawOffer.drawOffered = true;
-            }
+            setIsMyMove(true); // can play now
+            updateLog();
+          } else {
+            //  It was My Move
+            setIsMyMove(false);
           }
-          // now type could be join, start, ready
-          else if (
-            message.type === 'join' &&
-            message.from.toLowerCase() !== home.address.toLowerCase()
-          ) {
-            const msg = {
-              type: 'start',
-              from: home.address,
-              time: Date.now(),
-            };
-            client.publish(code, msg);
-          } else if (message.type === 'start') {
-            // Check if i am the first move
-            if (startColor === 'white') {
-              setIsMyMove(true);
-            }
-            setBothPlayersJoined(true);
-            // ## Perform other steps like closing  modal.
-            // Store or publish the time match begun.
-            setMatchStartTime(new Date.now());
+        } else if (message.type === 'command') {
+          // ## Add commands for resign and draw offered
+          if (message.command === 'offer_draw') {
+            // drawOffer.drawOffered = true;
           }
-        },
-      );
-    }
+        }
+        // now type could be join, start, ready
+        else if (
+          message.type === 'join' &&
+          message.from.toLowerCase() !== home.address.toLowerCase()
+        ) {
+          const msg = {
+            type: 'start',
+            from: home.address,
+            time: Date.now(),
+          };
+          client.publish(code, msg);
+        } else if (message.type === 'start') {
+          // Check if i am the first move
+          if (startColor === 'white') {
+            setIsMyMove(true);
+          }
+          setBothPlayersJoined(true);
+          // ## Perform other steps like closing  modal.
+          // Store or publish the time match begun.
+          setMatchStartTime(new Date.now());
+        }
+      },
+    );
+    // }
     return function cleanup() {
       client.unsubscribe(code);
     };
   }, [code, color]);
   return (
-    <div className="flex items-center justify-center mt-16 w-full">
-      <div className="flex flex-col">
-        <div id="opponent-timer" className="flex justify-between">
-          <h1>{opponent.address}</h1>
-          <Clock
-            playerTime={opponentColor === 'white' ? whiteTime : blackTime}
+    <PageContainer>
+      <div className="flex items-center justify-center mt-16 w-full text-white">
+        <div className="flex flex-col">
+          <div id="opponent-timer" className="flex justify-between">
+            <h1>{opponent.address}</h1>
+            <Clock
+              playerTime={opponentColor === 'white' ? whiteTime : blackTime}
+            />
+          </div>
+          <Chessground
+            width={boardsize}
+            height={boardsize}
+            turnColor={turnColor()}
+            movable={calcMovable()}
+            lastMove={lastMove}
+            fen={fen}
+            onMove={onMove}
+            highlight={{
+              check: true,
+              lastMove: true,
+            }}
+            premovable={{
+              enabled: true,
+              showDests: true,
+              castle: true,
+            }}
+            check={isChecked}
+            orientation={orientation}
           />
+          <div className="flex justify-between">
+            <h1>{home.address}</h1>
+            <Clock
+              playerTime={startColor === 'white' ? whiteTime : blackTime}
+            />
+          </div>
         </div>
-        <Chessground
-          width={boardsize}
-          height={boardsize}
-          turnColor={turnColor()}
-          movable={calcMovable()}
-          lastMove={lastMove}
-          fen={fen}
-          onMove={onMove}
-          highlight={{
-            check: true,
-            lastMove: true,
-          }}
-          premovable={{
-            enabled: true,
-            showDests: true,
-            castle: true,
-          }}
-          check={isChecked}
-          orientation={orientation}
-        />
-        <div className="flex justify-between">
-          <h1>{home.address}</h1>
-          <Clock playerTime={startColor === 'white' ? whiteTime : blackTime} />
+        {selectVisible && <Promotion promotion={promotion} />}
+        {isEndGameModalOpen && (
+          <EndGame setOpen={setEndGameModalOpen} opponent={opponent.address} />
+        )}
+        <div className="self-start w-1/5 ">
+          <MemoizedMoves trackMoves={trackMoves} boardSize={boardsize} />
         </div>
       </div>
-      {selectVisible && <Promotion promotion={promotion} />}
-      {isEndGameModalOpen && (
-        <EndGame setOpen={setEndGameModalOpen} opponent={opponent.address} />
-      )}
-      <div className="self-start w-1/5">
-        <h1 className="text-center">Moves</h1>
-        <div
-          style={{ maxHeight: `${boardsize}` }}
-          className="grid grid-cols-2 gap-4 text-center overflow-y-scroll"
-        >
-          {trackMoves?.map(move => {
-            return <div key={uuidv4()}>{move}</div>;
-          })}
-        </div>
-      </div>
-    </div>
+    </PageContainer>
   );
 }
 

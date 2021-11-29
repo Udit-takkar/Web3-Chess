@@ -56,7 +56,7 @@ const reducer = (state = initialState, action) => {
       const clockState = Object.assign({}, state);
       if (clockState.isTimeOver === false) {
         const playerTime = clockState[clockState.currentClock];
-        clockState[clockState.currentClock] = playerTime - 10;
+        clockState[clockState.currentClock] = playerTime - 1000;
       }
       return clockState;
     }
@@ -76,7 +76,7 @@ export const ClockContextProvider = ({ children }) => {
     blackTime: state.blackTime,
     startClock: () => {
       clearInterval(timeInterval);
-      timeInterval = setInterval(() => dispatch(clockTick()), 10);
+      timeInterval = setInterval(() => dispatch(clockTick()), 1000);
       dispatch({
         type: actions.SWITCH_CLOCK,
       });

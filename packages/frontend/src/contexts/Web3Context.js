@@ -17,7 +17,7 @@ import { getRpcUrl, logError } from '../utils/helpers';
 const StreamrClient = require('streamr-client');
 
 const nftaddress = '0x3d7285fB95677B9e128f00012106323ED9DA223E';
-const gameaddress = '0xF66Df7bcF4Ae78C8806259dBdD97cFf9732eCe20';
+const gameaddress = '0x08497541e044d71a65Daab444A640658D85371D5';
 
 const providerOptions = {
   walletconnect: {

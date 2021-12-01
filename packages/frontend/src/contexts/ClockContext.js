@@ -8,8 +8,8 @@ const initialState = {
   running: false,
   isTimeOver: false,
   currentClock: '',
-  whiteTime: 180000,
-  blackTime: 180000,
+  whiteTime: 600000,
+  blackTime: 600000,
 };
 
 const actions = {
@@ -56,7 +56,7 @@ const reducer = (state = initialState, action) => {
       const clockState = Object.assign({}, state);
       if (clockState.isTimeOver === false) {
         const playerTime = clockState[clockState.currentClock];
-        clockState[clockState.currentClock] = playerTime - 10;
+        clockState[clockState.currentClock] = playerTime - 100;
       }
       return clockState;
     }
@@ -67,21 +67,21 @@ const reducer = (state = initialState, action) => {
 const clockTick = () => ({
   type: actions.CLOCK_TICK,
 });
-
+let timeInterval = null;
 export const ClockContextProvider = ({ children }) => {
   const [state, dispatch] = React.useReducer(reducer, initialState);
-  let timeInterval = null;
   const value = {
     whiteTime: state.whiteTime,
     blackTime: state.blackTime,
     startClock: () => {
-      clearInterval(timeInterval);
-      timeInterval = setInterval(() => dispatch(clockTick()), 10);
+      if (timeInterval) {
+        clearInterval(timeInterval);
+      }
+      timeInterval = setInterval(() => dispatch(clockTick()), 100);
       dispatch({
         type: actions.SWITCH_CLOCK,
       });
       dispatch(clockTick());
-      console.log('end');
     },
     stopClock: () => {
       clearInterval(timeInterval);

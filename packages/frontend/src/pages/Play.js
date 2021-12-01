@@ -53,7 +53,7 @@ function Play({ startColor, vsComputer }) {
   const [isEndGameModalOpen, setEndGameModalOpen] = useState(false);
 
   const opponentColor = startColor === 'white' ? 'black' : 'white';
-
+  console.log('render');
   const home = game[startColor];
   const opponent = game[opponentColor];
 
@@ -341,6 +341,7 @@ function Play({ startColor, vsComputer }) {
               playerTime={opponentColor === 'white' ? whiteTime : blackTime}
             />
           </div>
+
           <Chessground
             width={boardsize}
             height={boardsize}

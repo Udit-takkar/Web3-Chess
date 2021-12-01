@@ -24,10 +24,10 @@ function Clock({ playerTime }) {
   }, [playerTime]);
 
   return (
-    <div className="font-montserrat p-2 bg-play-comp-color border-play-hand-btn text-xl border-2 ">
+    <div className="font-montserrat w-24 p-2 bg-play-comp-color border-play-hand-btn text-xl border-2 ">
       {time.current}
     </div>
   );
 }
 
-export default Clock;
+export default React.memo(Clock);

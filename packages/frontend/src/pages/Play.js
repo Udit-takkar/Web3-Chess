@@ -38,10 +38,10 @@ function Play({ startColor, vsComputer }) {
   const [pgn, setPgn] = useState(null);
   const [matchStartTime, setMatchStartTime] = useState(null);
   const [game, setGame] = useState({
-    code: null,
-    startColor: null,
+    code: '0xDc9FC2d9aB39B4dE70Cbae0A095A2a7d2Cf75065/1638129179083',
+    startColor: 'white',
     white: {
-      address: null,
+      address: '0x759bacE429553bCA40645Da3283de1A105531b11',
       remainingTime: 10,
     },
     black: {
@@ -58,7 +58,7 @@ function Play({ startColor, vsComputer }) {
   const opponent = game[opponentColor];
 
   const publishMove = async (code, from, to) => {
-    client.publish(code, {
+    return client.publish(code, {
       type: 'move',
       move: { from, to },
       from: game[startColor].address,
@@ -69,7 +69,7 @@ function Play({ startColor, vsComputer }) {
 
   async function updateLog() {
     startClock();
-
+    console.log(chess.pgn());
     const moves = chess.history();
     setMoves(prevMoves => [...prevMoves, moves[moves.length - 1]]);
     const gamePgn = chess.pgn();
@@ -155,7 +155,8 @@ function Play({ startColor, vsComputer }) {
 
   // Size of the Chess Board
   const boardsize =
-    Math.round((Math.min(window.innerWidth, window.innerHeight) * 0.8) / 8) * 8;
+    Math.round((Math.min(window.innerWidth, window.innerHeight) * 0.75) / 8) *
+    8;
 
   // Get the color whose turn is
   const turnColor = () => (chess.turn() === 'w' ? 'white' : 'black');
@@ -188,7 +189,6 @@ function Play({ startColor, vsComputer }) {
       setFen(chess.fen());
       setLastMove([move.from, move.to]);
       setChecked(chess.in_check());
-      console.log(move?.from, move?.to);
     }
     setIsMyMove(true);
     updateLog();
@@ -206,7 +206,7 @@ function Play({ startColor, vsComputer }) {
       }
     }
 
-    publishMove(code, from, to);
+    await publishMove(code, from, to);
 
     if (chess.move({ from, to, promotion: 'q' })) {
       setFen(chess.fen());
@@ -216,15 +216,11 @@ function Play({ startColor, vsComputer }) {
       if (vsComputer) {
         setTimeout(randomMove, 500);
       } else {
-        publishMove(code, from, to);
+        await publishMove(code, from, to);
       }
     }
     updateLog();
   };
-
-  client.on('connected', () => {
-    console.log('Yeah, we are connected now!');
-  });
 
   const promotion = async e => {
     const from = pendingMove[0];
@@ -239,14 +235,14 @@ function Play({ startColor, vsComputer }) {
     if (vsComputer) {
       setTimeout(randomMove, 500);
     } else {
-      publishMove(code, from, to, chess.history({ verbose: true }));
+      await publishMove(code, from, to, chess.history({ verbose: true }));
     }
     updateLog();
   };
 
   useEffect(() => {
     // if (vsComputer) {
-    //   setIsMyMove(true);
+    // setIsMyMove(true);
     // } else {
     // if (!state) {
     //   navigate('/');
@@ -334,8 +330,13 @@ function Play({ startColor, vsComputer }) {
     <PageContainer>
       <div className="flex items-center justify-center mt-16 w-full text-white">
         <div className="flex flex-col">
-          <div id="opponent-timer" className="flex justify-between">
-            <h1>{opponent.address}</h1>
+          <div
+            id="opponent-timer"
+            className="flex justify-between items-center"
+          >
+            <h1 className="font-montserrat text-sm tracking-wider">
+              {opponent.address}
+            </h1>
             <Clock
               playerTime={opponentColor === 'white' ? whiteTime : blackTime}
             />
@@ -360,8 +361,8 @@ function Play({ startColor, vsComputer }) {
             check={isChecked}
             orientation={orientation}
           />
-          <div className="flex justify-between">
-            <h1>{home.address}</h1>
+          <div className="flex justify-between items-center mt-2">
+            <h1 className="font-montserrat">{home.address}</h1>
             <Clock
               playerTime={startColor === 'white' ? whiteTime : blackTime}
             />
@@ -371,7 +372,7 @@ function Play({ startColor, vsComputer }) {
         {isEndGameModalOpen && (
           <EndGame setOpen={setEndGameModalOpen} opponent={opponent.address} />
         )}
-        <div className="self-start w-1/5 ">
+        <div className="self-start min-w-1/4 h-full my-auto">
           <MemoizedMoves trackMoves={trackMoves} boardSize={boardsize} />
         </div>
       </div>

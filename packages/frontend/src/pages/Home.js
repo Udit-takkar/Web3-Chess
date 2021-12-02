@@ -1,18 +1,12 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
-import { Web3Context } from '../contexts/Web3Context';
 import CreateMatch from '../components/modal/CreateMatch';
 import JoinMatch from '../components/modal/JoinMatch';
 import ChessBoard from '../assets/ChessBoard.webp';
 import playHand from '../assets/playhand.webp';
 import Computer from '../assets/computer.webp';
 import PageContainer from '../shared/PageContainer';
-import { useClock } from '../contexts/ClockContext';
 
 function Home() {
-  const { connectAccount, loading, account, disconnect } =
-    useContext(Web3Context);
-  const { startClock, whiteTime, blackTime } = useClock();
-
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isJoinMatchModalOpen, setJoinModalOpen] = useState(false);
 
@@ -52,15 +46,7 @@ function Home() {
             >
               <Button text="Play With Computer" imgSrc={Computer} />
             </div>
-            <button
-              onClick={() => {
-                startClock();
-              }}
-            >
-              Click Me
-            </button>
-            <h2>{whiteTime}</h2>
-            <h2>{blackTime}</h2>
+            {/* <button onClick={() => authenticate()}>Authenticate</button> */}
           </div>
         </div>
       </div>

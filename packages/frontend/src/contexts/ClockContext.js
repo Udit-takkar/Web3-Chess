@@ -7,7 +7,7 @@ export const useClock = () => useContext(ClockContext);
 const initialState = {
   running: false,
   isTimeOver: false,
-  currentClock: '',
+  currentClock: 'black',
   whiteTime: 600000,
   blackTime: 600000,
 };

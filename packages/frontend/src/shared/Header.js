@@ -1,12 +1,13 @@
-import React, { useContext, useEffect } from 'react';
-import { Web3Context } from '../contexts/Web3Context';
+import React from 'react';
 import Logo from '../assets/x-logo.png';
 import { NavLink } from 'react-router-dom';
 import { getAccountString } from '../utils/helpers';
+import { useMoralis } from 'react-moralis';
+import { useMoralisDapp } from '../contexts/MoralisDappProvider';
 
 function Header() {
-  const { connectAccount, loading, account, disconnect, client } =
-    useContext(Web3Context);
+  const { walletAddress } = useMoralisDapp();
+  const { authenticate, isAuthenticated, isAuthenticating } = useMoralis();
 
   return (
     <nav className="fixed top-0 left-0 select-none bg-nav  w-full min-h-20 h-20">
@@ -31,12 +32,15 @@ function Header() {
             Dashboard
           </NavLink>
           <p className="text-navFont font-montserrat text-md font-bold mx-3 tracking-wide">
-            {loading ? (
+            {isAuthenticating ? (
               <div className="flex items-center justify-center ">
                 <div className="w-8 h-8 border-b-2 border-white rounded-full animate-spin"></div>
               </div>
             ) : (
-              getAccountString(account)
+              walletAddress && getAccountString(walletAddress)
+            )}
+            {!isAuthenticated && !isAuthenticating && (
+              <h1 onClick={() => authenticate()}>Connect</h1>
             )}
           </p>
         </div>

@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Chess from 'chess.js';
 import Chessground from 'react-chessground';
-import { Web3Context } from '../contexts/Web3Context';
 import { makeFileObjects, storeFiles } from '../utils/web3storage';
 import Clock from '../components/Clock';
 import { useClock } from '../contexts/ClockContext';
@@ -10,42 +9,47 @@ import EndGame from '../components/modal/EndGame';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MemoizedMoves } from '../components/Moves';
 import PageContainer from '../shared/PageContainer';
+import { useMoralisDapp } from '../contexts/MoralisDappProvider';
 
 import '../styles/chessground.css';
 import '../styles/chessboard.css';
+import Moralis from 'moralis';
 
 // ## pass code && game data from context
-function Play({ startColor, vsComputer }) {
+function Play({ vsComputer }) {
+  // const testCode =
+  // '0xDc9FC2d9aB39B4dE70Cbae0A095A2a7d2Cf75065/chess/1637443792940';
+  const testCode = 'QmWyw1p3qvhFc3mRBQF7EHrRMXsXqjVkkDwMNeQfmo8VDr';
+  const { walletAddress } = useMoralisDapp();
   const navigate = useNavigate();
-  const { connectAccount, loading, account, disconnect, client } =
-    useContext(Web3Context);
   const isClockStarted = useRef(false);
-  const [code, setCode] = useState(
-    '0xDc9FC2d9aB39B4dE70Cbae0A095A2a7d2Cf75065/1638129179083',
-  );
+  const [code, setCode] = useState(testCode);
+  const startColor =
+    walletAddress.toLowerCase() === '0xdc9fc2d9ab39b4de70cbae0a095a2a7d2cf75065'
+      ? 'white'
+      : 'black';
   const { state } = useLocation();
   const { startClock, whiteTime, blackTime } = useClock();
   const [chess] = useState(new Chess());
   const [haveBothPlayerJoined, setBothPlayersJoined] = useState(false);
-  const [pendingMove, setPendingMove] = useState();
+  const pendingMove = useRef({ from: null, to: null });
   const [isMyMove, setIsMyMove] = useState(true);
   const [lastMove, setLastMove] = useState();
   const [selectVisible, setSelectVisible] = useState(false);
   const [fen, setFen] = useState('');
   const [isChecked, setChecked] = useState(false);
-  const [orientation, setOrientation] = useState(startColor || 'white');
+  const [orientation, setOrientation] = useState(startColor);
   const [color, setColor] = useState(startColor);
-  const [pgn, setPgn] = useState(null);
   const [matchStartTime, setMatchStartTime] = useState(null);
   const [game, setGame] = useState({
-    code: '0xDc9FC2d9aB39B4dE70Cbae0A095A2a7d2Cf75065/1638129179083',
-    startColor: 'white',
+    code: testCode,
+    startColor: startColor,
     white: {
-      address: '0x759bacE429553bCA40645Da3283de1A105531b11',
+      address: '0xDc9FC2d9aB39B4dE70Cbae0A095A2a7d2Cf75065',
       remainingTime: 10,
     },
     black: {
-      address: '0x759bacE429553bCA40645Da3283de1A105531b11',
+      address: '0x5B2020eC8F845CfeC08f1941395ca7d1Abe47cf3',
       remainingTime: 10,
     },
   });
@@ -53,28 +57,57 @@ function Play({ startColor, vsComputer }) {
   const [isEndGameModalOpen, setEndGameModalOpen] = useState(false);
 
   const opponentColor = startColor === 'white' ? 'black' : 'white';
-  console.log('render');
+
   const home = game[startColor];
   const opponent = game[opponentColor];
 
-  const publishMove = async (code, from, to) => {
-    return client.publish(code, {
-      type: 'move',
-      move: { from, to },
-      from: game[startColor].address,
-      time: Date.now(),
-      fen: chess.fen(),
-    });
+  const ChessMatch = Moralis.Object.extend(code);
+
+  // Size of the Chess Board
+  const boardsize =
+    Math.round((Math.min(window.innerWidth, window.innerHeight) * 0.75) / 8) *
+    8;
+
+  // Get the color whose turn is
+  const turnColor = () => (chess.turn() === 'w' ? 'white' : 'black');
+
+  // Check which pieces can be moved and where
+  const calcMovable = () => {
+    const dests = new Map();
+    if (isMyMove) {
+      chess.SQUARES.forEach(s => {
+        const ms = chess.moves({ square: s, verbose: true });
+        if (ms.length)
+          dests.set(
+            s,
+            ms.map(m => m.to),
+          );
+      });
+    }
+    return {
+      free: false,
+      dests,
+    };
+  };
+
+  const saveMove = async (from, to, pgn, by) => {
+    const chessMatch = new ChessMatch();
+
+    chessMatch.set('type', 'move');
+    chessMatch.set('move', { from, to });
+    chessMatch.set('pgn', pgn);
+    chessMatch.set('by', by);
+    chessMatch.set('time', { whiteTime, blackTime });
+
+    await chessMatch.save();
   };
 
   async function updateLog() {
+    console.log(chess.history());
     startClock();
-    console.log(chess.pgn());
+
     const moves = chess.history();
     setMoves(prevMoves => [...prevMoves, moves[moves.length - 1]]);
-    const gamePgn = chess.pgn();
-    // This pgn has to be saved
-    setPgn(gamePgn);
 
     if (chess.in_threefold_repetition()) {
       // drawOffer.drawOffered = true; // draw offer extended to both players if in 3-fold rep
@@ -137,8 +170,8 @@ function Play({ startColor, vsComputer }) {
         moves: movesPlayed,
       };
 
-      const uploadedFiles = makeFileObjects(data);
-      const uploadedFilesCID = storeFiles(uploadedFiles);
+      const gameFile = makeFileObjects(data);
+      const gameCID = storeFiles(gameFile);
       //  Save to Chain here
 
       //  Start End game here
@@ -152,33 +185,6 @@ function Play({ startColor, vsComputer }) {
 
     return '';
   }
-
-  // Size of the Chess Board
-  const boardsize =
-    Math.round((Math.min(window.innerWidth, window.innerHeight) * 0.75) / 8) *
-    8;
-
-  // Get the color whose turn is
-  const turnColor = () => (chess.turn() === 'w' ? 'white' : 'black');
-
-  // Check which pieces can be moved and where
-  const calcMovable = () => {
-    const dests = new Map();
-    if (isMyMove) {
-      chess.SQUARES.forEach(s => {
-        const ms = chess.moves({ square: s, verbose: true });
-        if (ms.length)
-          dests.set(
-            s,
-            ms.map(m => m.to),
-          );
-      });
-    }
-    return {
-      free: false,
-      dests,
-    };
-  };
 
   //  Random Move for Computer
   const randomMove = () => {
@@ -196,17 +202,17 @@ function Play({ startColor, vsComputer }) {
 
   const onMove = async (from, to) => {
     const moves = chess.moves({ verbose: true });
+
     for (let i = 0, len = moves.length; i < len; i += 1) {
       if (moves[i].flags.indexOf('p') !== -1 && moves[i].from === from) {
-        setPendingMove([from, to]);
+        pendingMove.current.from = from;
+        pendingMove.current.to = to;
         if (turnColor() === startColor) {
           setSelectVisible(true);
         }
         return;
       }
     }
-
-    await publishMove(code, from, to);
 
     if (chess.move({ from, to, promotion: 'q' })) {
       setFen(chess.fen());
@@ -216,15 +222,15 @@ function Play({ startColor, vsComputer }) {
       if (vsComputer) {
         setTimeout(randomMove, 500);
       } else {
-        await publishMove(code, from, to);
+        saveMove(from, to, chess.pgn(), home.address);
       }
     }
     updateLog();
   };
 
   const promotion = async e => {
-    const from = pendingMove[0];
-    const to = pendingMove[1];
+    const from = pendingMove.current.from;
+    const to = pendingMove.current.to;
 
     chess.move({ from, to, promotion: e });
     setFen(chess.fen());
@@ -235,97 +241,49 @@ function Play({ startColor, vsComputer }) {
     if (vsComputer) {
       setTimeout(randomMove, 500);
     } else {
-      await publishMove(code, from, to, chess.history({ verbose: true }));
+      const chessMatch = new ChessMatch();
+
+      chessMatch.set('type', 'move');
+      chessMatch.set('move', { from, to, promotion: e });
+      chessMatch.set('pgn', chess.pgn());
+      chessMatch.set('by', home.address);
+      chessMatch.set('time', { whiteTime, blackTime });
+
+      await chessMatch.save();
     }
     updateLog();
   };
 
   useEffect(() => {
-    // if (vsComputer) {
-    // setIsMyMove(true);
-    // } else {
-    // if (!state) {
-    //   navigate('/');
-    // } else {
-    client.subscribe(
-      {
-        stream: code,
-      },
-      (message, metadata) => {
-        // note: will also receive own messages
-        const msgTime = metadata.messageId.timestamp;
-        console.log(message);
-        console.log(metadata);
+    const listenToEvents = async () => {
+      let query = new Moralis.Query(code);
+      let subscription = await query.subscribe();
 
-        if (message.type === 'move') {
-          if (color !== turnColor()) {
+      subscription.on('create', obj => {
+        if (obj.attributes.type === 'move') {
+          if (home.address.toLowerCase() !== obj.attributes.by.toLowerCase()) {
             //  This Move was played by opponent
-            const { move } = message;
+            const { move } = obj.attributes;
             const { from, to, promotion } = move;
-            const moves = chess.moves({ verbose: true }); // Returns a list of legal moves from the current position
-
-            //  Check if promotion is possible
-            for (let i = 0, len = moves.length; i < len; i += 1) {
-              if (
-                moves[i].flags.indexOf('p') !== -1 &&
-                moves[i].from === from
-              ) {
-                setPendingMove([from, to]);
-                if (turnColor() === startColor) {
-                  setSelectVisible(true); // only person playing move can see promotion
-                  return;
-                }
-              }
-            }
 
             const moveResult = chess.move({ from, to, promotion });
-
             if (moveResult) {
-              // move successful
               setFen(chess.fen());
               setLastMove([from, to]);
               setChecked(chess.in_check());
+              setIsMyMove(true); // can play now
+              updateLog();
             }
-            setIsMyMove(true); // can play now
-            updateLog();
           } else {
             //  It was My Move
             setIsMyMove(false);
           }
-        } else if (message.type === 'command') {
-          // ## Add commands for resign and draw offered
-          if (message.command === 'offer_draw') {
-            // drawOffer.drawOffered = true;
-          }
         }
-        // now type could be join, start, ready
-        else if (
-          message.type === 'join' &&
-          message.from.toLowerCase() !== home.address.toLowerCase()
-        ) {
-          const msg = {
-            type: 'start',
-            from: home.address,
-            time: Date.now(),
-          };
-          client.publish(code, msg);
-        } else if (message.type === 'start') {
-          // Check if i am the first move
-          if (startColor === 'white') {
-            setIsMyMove(true);
-          }
-          setBothPlayersJoined(true);
-          // ## Perform other steps like closing  modal.
-          // Store or publish the time match begun.
-          setMatchStartTime(new Date.now());
-        }
-      },
-    );
-    // }
-    return function cleanup() {
-      client.unsubscribe(code);
+      });
     };
-  }, [code, color]);
+    listenToEvents();
+  }, []);
+
   return (
     <PageContainer>
       <div className="flex items-center justify-center mt-16 w-full text-white">

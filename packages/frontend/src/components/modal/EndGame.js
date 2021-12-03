@@ -3,17 +3,25 @@ import NFTtemplate from '../../assets/chessmeme.jpeg';
 import Portal from '../../shared/Portal';
 import ModalContainer from '../../shared/ModalContainer';
 import { saveData } from '../../utils/ipfsClient';
-import { ethers } from 'ethers';
-import { useWeb3 } from '../../contexts/Web3Context';
-import NFTContract from '../../contracts/NFT.json';
 import CloseBtn from '../../components/CloseBtn';
-
-const nftaddress = '0x8f2384375203587Ee33827BD55F59daDDBf8F58f';
+import { useMoralisDapp } from '../../contexts/MoralisDappProvider';
+import { useWeb3ExecuteFunction } from 'react-moralis';
+import { useMoralisFile } from 'react-moralis';
+import Moralis from 'moralis';
 
 function EndGame({ setOpen, opponent }) {
   const canvasRef = useRef(null);
   const [finalImg, setImg] = useState(null);
-  const { nftContract } = useWeb3();
+  const {
+    walletAddress,
+    gameAddress,
+    gameContractABI,
+    chainId,
+    nftContractABI,
+    nftContract,
+  } = useMoralisDapp();
+  const ipfsProcessor = useMoralisFile();
+  const contractProcessor = useWeb3ExecuteFunction();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -39,22 +47,41 @@ function EndGame({ setOpen, opponent }) {
     imageObj.src = NFTtemplate;
   }, []);
 
+  const processContent = async content => {
+    const ipfsResult = await ipfsProcessor.saveFile(
+      'nft.json',
+      { base64: btoa(JSON.stringify(content)) },
+      { saveIPFS: true },
+    );
+
+    const data = {
+      hash: ipfsResult._hash,
+      URI: ipfsResult._ipfs,
+    };
+    return data;
+  };
+
   const handleClick = async () => {
     const imgCID = await saveData(finalImg);
     const metadata = {
-      description: `awarded for beating ${opponent} in chess by  Web3Chess `,
+      title: 'Web3 Chess Victory',
+      description: `Awarded for beating ${opponent} in chess by  Web3Chess `,
       image: imgCID,
     };
-    const stringifyData = await JSON.stringify(metadata);
-    const nftCID = await saveData(stringifyData);
-    const tokenURI = `https://ipfs.infura.io/ipfs/${nftCID}`;
-
-    let transaction = await nftContract.createToken(tokenURI);
-    let tx = await transaction.wait();
-
-    let event = tx.events[0];
-    let value = event.args[2];
-    let tokenId = value.toNumber();
+    const data = await processContent(metadata);
+    const tokenURI = data.URI;
+    const options = {
+      contractAddress: nftContract,
+      functionName: 'createToken',
+      abi: nftContractABI,
+      // msgValue: Moralis.Units.ETH('0.05'),
+      params: {
+        tokenURI,
+      },
+    };
+    await contractProcessor.fetch({
+      params: options,
+    });
   };
 
   return (

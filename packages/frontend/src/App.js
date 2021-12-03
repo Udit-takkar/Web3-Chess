@@ -8,11 +8,11 @@ import {
 import Home from './pages/Home';
 import Play from './pages/Play';
 import DashBoard from './pages/DashBoard';
-import { Web3ContextProvider } from './contexts/Web3Context';
 import { ClockContextProvider } from './contexts/ClockContext';
 import Layout from './shared/Layout';
 import 'tailwindcss/tailwind.css';
 import { useMoralis } from 'react-moralis';
+import Market from './pages/Market';
 
 function App() {
   const { isWeb3Enabled, enableWeb3, isAuthenticated, isWeb3EnableLoading } =
@@ -31,6 +31,7 @@ function App() {
             <Route exact path="/" element={<Home />} />
             <Route exact path="/play" element={<Play vsComputer={true} />} />
             <Route exact path="/dashboard" element={<DashBoard />} />
+            <Route exact path="/market" element={<Market />} />
           </Routes>
         </Layout>
       </Router>

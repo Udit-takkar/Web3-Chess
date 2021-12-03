@@ -1,28 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useMoralis } from 'react-moralis';
 import MoralisDappContext from './MoralisCotext';
-// const StreamrClient = require('streamr-client');
+import GameContract from '../contracts/GameContract.json';
+import NFTContract from '../contracts/NFT.json';
 
 function MoralisDappProvider({ children }) {
   const { web3, Moralis, user } = useMoralis();
   const [walletAddress, setWalletAddress] = useState();
   const [chainId, setChainId] = useState();
-  const [contractABI, setContractABI] = useState();
-  const [marketAddress, setMarketAddress] = useState();
-  const [client, setClient] = useState();
+  const [gameContractABI, setGameContractABI] = useState(GameContract.abi);
+  const [gameAddress, setGameAddress] = useState(
+    '0x091b9A3d3F4661B74153d655cc1147ce07A79A21',
+  );
+  const [nftContract, setNftContract] = useState(
+    '0x0b378F3dCe17a83de950aB7BabC2C4C0daf789c9',
+  );
+  const [nftContractABI, setNftContractABI] = useState(NFTContract.abi);
 
-  // const startClient = async () => {
-  //   const streamr = await new StreamrClient({
-  //     // restUrl: 'http://localhost/api/v1', // if you want to test locally in the streamr-docker-dev environment
-  //     // auth: { ethereum: web3.givenProvider },
-  //     auth: {
-  //       privateKey: process.env.REACT_APP_PRIVATE_KEY,
-  //     },
-  //     publishWithSignature: 'never',
-  //     autoConnect: 'true',
-  //   });
-  //   setClient(streamr);
-  // };
   useEffect(() => {
     Moralis.onChainChanged(function (chain) {
       setChainId(chain);
@@ -50,11 +44,12 @@ function MoralisDappProvider({ children }) {
       value={{
         walletAddress,
         chainId,
-        marketAddress,
-        setMarketAddress,
-        contractABI,
-        setContractABI,
-        client,
+        gameAddress,
+        setGameAddress,
+        gameContractABI,
+        setGameContractABI,
+        nftContract,
+        nftContractABI,
       }}
     >
       {children}

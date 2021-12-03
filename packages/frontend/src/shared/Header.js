@@ -19,18 +19,21 @@ function Header() {
           </h2>
         </div>
         <div className="flex justify-around">
-          <NavLink
-            to="/"
-            className="text-navFont font-montserrat text-md font-bold mx-3 tracking-wide"
-          >
-            Home
-          </NavLink>
-          <NavLink
-            to="/dashboard"
-            className="text-navFont font-montserrat text-md font-bold mx-3 tracking-wide"
-          >
-            Dashboard
-          </NavLink>
+          {[
+            { name: 'Home', route: '/' },
+            { name: 'Dashboard', route: '/dashboard' },
+            { name: 'MarketPlace', route: '/market' },
+          ].map(({ name, route }) => {
+            return (
+              <NavLink
+                to={route}
+                className="text-navFont font-montserrat text-md font-bold mx-3 tracking-wide"
+              >
+                {name}
+              </NavLink>
+            );
+          })}
+
           <p className="text-navFont font-montserrat text-md font-bold mx-3 tracking-wide">
             {isAuthenticating ? (
               <div className="flex items-center justify-center ">

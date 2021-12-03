@@ -3,9 +3,11 @@ import Portal from '../../shared/Portal';
 import { useForm } from 'react-hook-form';
 import ModalContainer from '../../shared/ModalContainer';
 import CloseBtn from '../../components/CloseBtn';
-import { useWeb3 } from '../../contexts/Web3Context';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useMoralisDapp } from '../../contexts/MoralisDappProvider';
+import Moralis from 'moralis';
+import { useWeb3ExecuteFunction } from 'react-moralis';
 
 function JoinMatch({ setJoinModalOpen }) {
   const {
@@ -16,7 +18,9 @@ function JoinMatch({ setJoinModalOpen }) {
     formState: { errors },
   } = useForm();
   const navigate = useNavigate();
-  const { gameContractProvider, gameContract, account, client } = useWeb3();
+  const { walletAddress, gameAddress, gameContractABI, chainId } =
+    useMoralisDapp();
+
   const [showMatchDetails, setShowMatchDetails] = useState(false);
   const [
     { player1, player2, player2Color, player1Color, stake, code },
@@ -24,14 +28,48 @@ function JoinMatch({ setJoinModalOpen }) {
   ] = useState({});
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
+  const contractProcessor = useWeb3ExecuteFunction();
 
+  const getBalance = async () => {
+    const options = {
+      contractAddress: gameAddress,
+      functionName: 'getPlayerBalance',
+      abi: gameContractABI,
+      // msgValue: Moralis.Units.ETH('0.05'),
+      params: {
+        playerAddress: walletAddress,
+      },
+    };
+    await Moralis.enableWeb3();
+    const amountInWei = await Moralis.executeFunction(options);
+    const web3 = new Moralis.Web3();
+    const amountInEth = web3.utils.fromWei(amountInWei, 'ether');
+    return amountInEth;
+  };
+
+  const getDetails = async code => {
+    const options = {
+      contractAddress: gameAddress,
+      functionName: 'getGameDetails',
+      abi: gameContractABI,
+      // msgValue: Moralis.Units.ETH('0.05'),
+      params: {
+        gameCode: code,
+      },
+    };
+    await Moralis.enableWeb3();
+    const result = await Moralis.executeFunction(options);
+    return result;
+  };
   const onSubmit = async data => {
     const fields = { fields: data };
     setLoading(true);
     try {
       //  Just Load the Match Details for the use to accept the
-      const url = await gameContractProvider.getGameDetails(data.code);
-      const res = await axios.get(`${url}/game.json`);
+      // const url = await getDetails(data.code);
+      const url =
+        'https://ipfs.moralis.io:2053/ipfs/QmPmMJGGNEcRWn8fK7js9wXxUJvqKZHDQvzkeponTzP36r';
+      const res = await axios.get(`${url}`);
       setMatchData({ ...res.data, code: data.code });
       setShowMatchDetails(true);
     } catch (err) {
@@ -43,34 +81,40 @@ function JoinMatch({ setJoinModalOpen }) {
 
   const handleClick = async () => {
     try {
-      const balance = await gameContractProvider.getPlayerBalance(account);
+      const balance = await getBalance();
       if (balance < stake) {
         setErr('Not Enough Balance');
       }
 
-      const transaction = await gameContract.participateGame(code);
-      await transaction.wait();
-      // const msg = {
-      //   type: 'join',
-      //   from: account,
-      // };
-      // await client.publish(code, msg);
-
-      navigate('/play', {
-        state: {
-          gameData: {
-            code,
-            startColor: player2Color,
-            white: {
-              address: player2Color === 'white' ? player2 : player1,
-              remainingTime: 600000,
-            },
-            black: {
-              address: player2Color === 'black' ? player2 : player1,
-              remainingTime: 600000,
-            },
-          },
+      const options = {
+        contractAddress: gameAddress,
+        functionName: 'startGame',
+        abi: gameContractABI,
+        params: {
+          gameCode: code,
         },
+      };
+      await contractProcessor.fetch({
+        params: options,
+        onSuccess: () => {
+          navigate('/play', {
+            state: {
+              gameData: {
+                code,
+                startColor: player2Color,
+                white: {
+                  address: walletAddress,
+                  remainingTime: 600000,
+                },
+                black: {
+                  address: player2,
+                  remainingTime: 600000,
+                },
+              },
+            },
+          });
+        },
+        onError: error => console.error(error),
       });
     } catch (err) {
       console.log(err);

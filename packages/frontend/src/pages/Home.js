@@ -46,7 +46,6 @@ function Home() {
             >
               <Button text="Play With Computer" imgSrc={Computer} />
             </div>
-            {/* <button onClick={() => authenticate()}>Authenticate</button> */}
           </div>
         </div>
       </div>

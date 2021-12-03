@@ -4,15 +4,22 @@ import { useForm } from 'react-hook-form';
 import Select from 'react-select';
 import ModalContainer from '../../shared/ModalContainer';
 import CloseBtn from '../../components/CloseBtn';
-import { useWeb3 } from '../../contexts/Web3Context';
 import { ethers } from 'ethers';
-import { makeFileObjects, storeFiles } from '../../utils/web3storage';
-// import { StorageNode } from 'streamr-client';
 import { useNavigate } from 'react-router-dom';
+import { useMoralisFile } from 'react-moralis';
+import Moralis from 'moralis';
+import { useMoralisDapp } from '../../contexts/MoralisDappProvider';
+import { useWeb3ExecuteFunction } from 'react-moralis';
 
 function CreateMatch({ setCreateModalOpen }) {
   const navigate = useNavigate();
+  const { walletAddress, gameAddress, gameContractABI, chainId } =
+    useMoralisDapp();
+  const ipfsProcessor = useMoralisFile();
+  const contractProcessor = useWeb3ExecuteFunction();
+
   const checkAddress = add => ethers.utils.isAddress(add);
+
   const {
     register,
     handleSubmit,
@@ -20,11 +27,42 @@ function CreateMatch({ setCreateModalOpen }) {
     setError,
     formState: { errors },
   } = useForm();
-  const { gameContractProvider, gameContract, account, client } = useWeb3();
+
+  const processContent = async content => {
+    const ipfsResult = await ipfsProcessor.saveFile(
+      'invite.json',
+      { base64: btoa(JSON.stringify(content)) },
+      { saveIPFS: true },
+    );
+
+    const data = {
+      hash: ipfsResult._hash,
+      URI: ipfsResult._ipfs,
+    };
+    return data;
+  };
+
+  const getBalance = async () => {
+    const options = {
+      contractAddress: gameAddress,
+      functionName: 'getPlayerBalance',
+      abi: gameContractABI,
+      // msgValue: Moralis.Units.ETH('0.05'),
+      params: {
+        playerAddress: walletAddress,
+      },
+    };
+    await Moralis.enableWeb3();
+    const amountInWei = await Moralis.executeFunction(options);
+    const web3 = new Moralis.Web3();
+    const amountInEth = web3.utils.fromWei(amountInWei, 'ether');
+    return amountInEth;
+  };
+
   const onSubmit = async data => {
     const fields = { fields: data };
+    const balance = await getBalance();
 
-    const balance = await gameContractProvider.getPlayerBalance(account);
     if (data.amount > balance) {
       setError('amount', {
         type: 'manual',
@@ -32,62 +70,54 @@ function CreateMatch({ setCreateModalOpen }) {
       });
     }
 
-    //  Saving Data To Web3 Storage
     const opponentAddress = data.address;
+
     const beforeMatchData = {
-      player1: account,
+      platform: 'web3Chess',
+      player1: walletAddress,
       player1Color: 'white',
       player2: opponentAddress,
       player2Color: 'black',
       stake: data.amount,
-      time: 600000,
-      createdBy: account,
+      time: 60000,
     };
-    const uploadedFiles = await makeFileObjects(beforeMatchData);
-    const beforeMatchCID = await storeFiles(uploadedFiles);
-    const beforeMatchDataURI = `https://ipfs.infura.io/ipfs/${beforeMatchCID}`;
-    console.log(beforeMatchDataURI);
-    // Creating Stream streams for publishing and subscribing match data
-    const gameCode = `${account}/${Date.now()}`;
-    const stream = await client.createStream({
-      id: gameCode,
-    });
 
-    // Setting up permission for streamr streams
-    if (!(await stream.hasPermission('stream_get', null))) {
-      await stream.grantPermission('stream_get', null);
-    }
-    if (!(await stream.hasPermission('stream_publish', opponentAddress))) {
-      await stream.grantPermission('stream_publish', opponentAddress);
-    }
-    if (!(await stream.hasPermission('stream_subscribe', null))) {
-      await stream.grantPermission('stream_subscribe', null);
-    }
+    const res = await processContent(beforeMatchData);
+    const beforeMatchDataURI = res.URI;
+    const gameCode = res.hash;
 
-    // locking the values in the contract
-    const price = ethers.utils.parseUnits(data.amount.toString(), 'ether');
-    const transaction = await gameContract.startGame(
-      gameCode,
-      beforeMatchDataURI,
-      data.address,
-      price,
-    );
-    await transaction.wait();
-    navigate('/play', {
-      state: {
-        gameData: {
-          code: gameCode,
-          startColor: 'white',
-          white: {
-            address: account,
-            remainingTime: 600000,
-          },
-          black: {
-            address: opponentAddress,
-            remainingTime: 600000,
-          },
-        },
+    const options = {
+      contractAddress: gameAddress,
+      functionName: 'startGame',
+      abi: gameContractABI,
+      params: {
+        gameCode,
+        beforeMatchDataURI,
+        opponent: opponentAddress,
+        stake: data.amount,
       },
+    };
+    await contractProcessor.fetch({
+      params: options,
+      onSuccess: () => {
+        navigate('/play', {
+          state: {
+            gameData: {
+              code: gameCode,
+              startColor: 'white',
+              white: {
+                address: walletAddress,
+                remainingTime: 600000,
+              },
+              black: {
+                address: opponentAddress,
+                remainingTime: 600000,
+              },
+            },
+          },
+        });
+      },
+      onError: error => console.error(error),
     });
   };
   const options = [{ value: '10', label: '10 Minutes' }];

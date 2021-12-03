@@ -1,9 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@200&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('assets/fonts/PressStart2P-Regular.ttf') format('tff');
+  font-display: swap;
+}
 
 body {
   margin: 0;

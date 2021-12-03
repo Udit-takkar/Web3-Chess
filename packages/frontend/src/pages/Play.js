@@ -54,7 +54,7 @@ function Play({ vsComputer }) {
     },
   });
   const [trackMoves, setMoves] = useState([]);
-  const [isEndGameModalOpen, setEndGameModalOpen] = useState(false);
+  const [isEndGameModalOpen, setEndGameModalOpen] = useState(true);
 
   const opponentColor = startColor === 'white' ? 'black' : 'white';
 
@@ -90,6 +90,7 @@ function Play({ vsComputer }) {
     };
   };
 
+  // saving to Moralis
   const saveMove = async (from, to, pgn, by) => {
     const chessMatch = new ChessMatch();
 
@@ -110,7 +111,6 @@ function Play({ vsComputer }) {
     setMoves(prevMoves => [...prevMoves, moves[moves.length - 1]]);
 
     if (chess.in_threefold_repetition()) {
-      // drawOffer.drawOffered = true; // draw offer extended to both players if in 3-fold rep
       //  ### End this Match Here and return
     }
 

@@ -101,14 +101,31 @@ contract GameContract is ReentrancyGuard {
       games[gameCode].status == GameStatus.ongoing,
       "Match did not started or invalid code"
     );
-    require(
-      games[gameCode].playerOne == msg.sender,
-      "Only Players can end the game"
-    );
+    // Have to change this later
+    // require(
+    //   games[gameCode].playerOne == msg.sender,
+    //   "Only Players can end the game"
+    // );
 
     games[gameCode].status = GameStatus.ended;
     games[gameCode].afterMatchDataURI = afterMatchDataURI;
     games[gameCode].outcome = outcome;
+
+    address playerOne = games[gameCode].playerOne;
+    address playerTwo = games[gameCode].playerTwo;
+
+    uint256 gameStake = games[gameCode].stake;
+
+    if (outcome == GameOutcome.draw) {
+      playerBalances[playerOne] = playerBalances[playerOne].add(gameStake);
+      playerBalances[playerTwo] = playerBalances[playerTwo].add(gameStake);
+    } else if (outcome == GameOutcome.playerOne) {
+      uint256 totalStakeWon = gameStake.mul(2);
+      playerBalances[playerOne] = playerBalances[playerOne].add(totalStakeWon);
+    } else if (outcome == GameOutcome.playerTwo) {
+      uint256 totalStakeWon = gameStake.mul(2);
+      playerBalances[playerTwo] = playerBalances[playerTwo].add(totalStakeWon);
+    }
   }
 
   function withdraw() external nonReentrant {
@@ -138,10 +155,7 @@ contract GameContract is ReentrancyGuard {
     view
     returns (string memory URI)
   {
-    string
-      memory tmp = "https://ipfs.infura.io/ipfs/bafybeie7q7hidfgv5fvhhcx7z6lxox27eakaqpsh3v7lgw4op5qisfh474";
-    return tmp;
-    // require(gameCode[gameCode].status==GameStatus.started,"Invalid Code");
-    // return games[gameCode].beforeMatchDataURI;
+    require(games[gameCode].status == GameStatus.started, "Invalid Code");
+    return games[gameCode].beforeMatchDataURI;
   }
 }

@@ -15,11 +15,17 @@ module.exports = {
         'btn-purple': '#5A32E6',
         'btn-input': '#1B0D2A',
         'nft-heading': '#34f2f7',
+        softblue: 'hsl(215, 51%, 70%)',
+        cyan: 'hsl(178, 100%, 50%)',
+        darkbluemain: 'hsl(217, 54%, 11%)',
+        darkbluecard: 'hsl(216, 50%, 16%)',
+        darkblueline: 'hsl(215, 32%, 27%)',
       },
       fontFamily: {
         poppins: ['Poppins'],
         montserrat: ['Montserrat'],
         'press-start': ['"Press Start 2P"', 'cursive'],
+        out: ['Outfit'],
       },
       backgroundImage: {
         'main-bg': "url('/src/assets/main-background.jpg')",

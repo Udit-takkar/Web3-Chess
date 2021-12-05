@@ -66,9 +66,9 @@ function JoinMatch({ setJoinModalOpen }) {
     setLoading(true);
     try {
       //  Just Load the Match Details for the use to accept the
-      // const url = await getDetails(data.code);
-      const url =
-        'https://ipfs.moralis.io:2053/ipfs/QmPmMJGGNEcRWn8fK7js9wXxUJvqKZHDQvzkeponTzP36r';
+      const url = await getDetails(data.code);
+      // const url =
+      //   'https://ipfs.moralis.io:2053/ipfs/QmPmMJGGNEcRWn8fK7js9wXxUJvqKZHDQvzkeponTzP36r';
       const res = await axios.get(`${url}`);
       setMatchData({ ...res.data, code: data.code });
       setShowMatchDetails(true);

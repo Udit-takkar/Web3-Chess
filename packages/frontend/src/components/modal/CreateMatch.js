@@ -122,38 +122,66 @@ function CreateMatch({ setCreateModalOpen }) {
   };
   const options = [{ value: '10', label: '10 Minutes' }];
   const matchOptions = [{ value: 'standard', label: 'Standard' }];
+  const styles = {
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: '#1B0D2A',
+      color: '#ffffff',
+    }),
+    input: (provided, state) => ({
+      ...provided,
+      color: '#ffffff',
+    }),
+    dropdownIndicator: (provided, state) => ({
+      ...provided,
+      backgroundColor: '#1B0D2A',
+      color: '#ffffff',
+    }),
+    singleValue: (provided, state) => ({
+      ...provided,
+      // backgroundColor: '#1B0D2A',
+      color: '#ffffff',
+    }),
+    control: (provided, state) => ({
+      ...provided,
+      backgroundColor: '#1B0D2A',
+      color: '#ffffff',
+    }),
+  };
   return (
-    <ModalContainer>
-      <h1 className="text-center text-4xl font-semibold mt-10">
+    <ModalContainer style={{ backgroundColor: '#FFFFFF14' }}>
+      <h1 className="bg-dark-purple font-montserrat p-2  backdrop-filter	backdrop-blur-md    border-2  text-heading-color text-center text-3xl font-semibold">
         Create a Match
       </h1>
       <div
-        className="absolute top-2 right-2 h-6 cursor-pointer"
+        className="absolute top-2 right-2 h-6 cursor-pointer bg-white"
         onClick={() => setCreateModalOpen(false)}
       >
         <CloseBtn />
       </div>
 
       <form
-        className="max-w-xl m-auto py-10 mt-10 px-12 border"
+        className="max-w-xl m-auto py-10 px-12 border font-montserrat backdrop-filter	backdrop-blur-md bg-play-comp-color border-play-hand-btn "
         onSubmit={handleSubmit(onSubmit)}
       >
         <Select
           value={matchOptions[0]}
           // onChange={handleChange}
+          styles={styles}
           options={matchOptions}
           className="mb-4"
         />
         <Select
           value={options[0]}
           // onChange={handleChange}
+          styles={styles}
           options={options}
         />
-        <label className="text-gray-600 font-medium">
+        <label className="text-white font-medium">
           Opponent Ethereum Address
         </label>
         <input
-          className="border-solid border-gray-300 border py-2 px-4 w-full rounded text-gray-700"
+          className="border-solid bg-btn-input border-gray-300 border py-2 px-4 w-full rounded text-white"
           name="address"
           placeholder="Enter full address"
           autoFocus
@@ -168,11 +196,9 @@ function CreateMatch({ setCreateModalOpen }) {
           </div>
         )}
 
-        <label className="text-gray-600 font-medium">
-          Enter Amount To Stake
-        </label>
+        <label className="text-white font-medium">Enter Amount To Stake</label>
         <input
-          className="border-solid border-gray-300 border py-2 px-4 w-full rounded text-gray-700"
+          className="border-solid  bg-btn-input border-gray-300 border py-2 px-4 w-full rounded text-white"
           name="amount"
           type="number"
           placeholder="Enter amount"
@@ -189,7 +215,7 @@ function CreateMatch({ setCreateModalOpen }) {
         )}
 
         <button
-          className="mt-4 w-full bg-green-400 hover:bg-green-600 text-green-100 border py-3 px-6 font-semibold text-md rounded"
+          className="mt-4 w-full  text-white rounded-lg bg-btn-purple border-play-hand-btn   border py-3 px-6 font-semibold text-md "
           type="submit"
         >
           Submit

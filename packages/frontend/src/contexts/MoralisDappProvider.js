@@ -3,6 +3,7 @@ import { useMoralis } from 'react-moralis';
 import MoralisDappContext from './MoralisCotext';
 import GameContract from '../contracts/GameContract.json';
 import NFTContract from '../contracts/NFT.json';
+import MarketPlaceContract from '../contracts/MarketPlace.json';
 
 function MoralisDappProvider({ children }) {
   const { web3, Moralis, user } = useMoralis();
@@ -10,13 +11,16 @@ function MoralisDappProvider({ children }) {
   const [chainId, setChainId] = useState();
   const [gameContractABI, setGameContractABI] = useState(GameContract.abi);
   const [gameAddress, setGameAddress] = useState(
-    '0x091b9A3d3F4661B74153d655cc1147ce07A79A21',
+    '0x3CC75E45019C04f189a21950849428026eA34273',
   );
   const [nftContract, setNftContract] = useState(
-    '0x0b378F3dCe17a83de950aB7BabC2C4C0daf789c9',
+    '0x35eC43955e0d7A39430a1C4e6801Dc0857e69A88',
   );
   const [nftContractABI, setNftContractABI] = useState(NFTContract.abi);
-
+  const [marketPlace, setMarketPlace] = useState(
+    '0xf824cC3568cE222D4905EF3Bb48D9304e5a48DEC',
+  );
+  const [marketPlaceAbi, setMarketPlaceAbi] = useState(MarketPlaceContract.abi);
   useEffect(() => {
     Moralis.onChainChanged(function (chain) {
       setChainId(chain);
@@ -50,6 +54,8 @@ function MoralisDappProvider({ children }) {
         setGameContractABI,
         nftContract,
         nftContractABI,
+        marketPlace,
+        marketPlaceAbi,
       }}
     >
       {children}

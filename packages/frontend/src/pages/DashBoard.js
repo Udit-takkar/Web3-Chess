@@ -6,9 +6,8 @@ import { useMoralisDapp } from '../contexts/MoralisDappProvider';
 import ViewOnPolyscanLogo from '../components/ViewOnPolyscan';
 import Moralis from 'moralis';
 import Matic from '../assets/polygon.svg';
-import UpArrow from '../assets/UpArrow';
 import { useNFTTokenIds } from '../hooks/useNFTTokenIds';
-import axios from 'axios';
+import { useWeb3ExecuteFunction } from 'react-moralis';
 
 function DashBoard() {
   const { walletAddress, gameAddress, gameContractABI, nftContract } =
@@ -17,7 +16,9 @@ function DashBoard() {
   const { NFTTokenIds, totalNFTs, getNFTTokenIds } =
     useNFTTokenIds(nftContract);
   const [nfts, setNfts] = useState([]);
-  console.log(nfts);
+  const [amount, setAmount] = useState(0);
+
+  const contractProcessor = useWeb3ExecuteFunction();
 
   useEffect(() => {
     const getBalance = async () => {
@@ -46,32 +47,55 @@ function DashBoard() {
   }, [nftContract]);
 
   useEffect(() => {
-    const loadNfts = async () => {
-      if (NFTTokenIds && NFTTokenIds.length > 0) {
-        const items = await Promise.all(
-          NFTTokenIds.map(async i => {
-            const imageURL = `https://ipfs.infura.io/ipfs/${i.image}`;
-            let item = {
-              ...i,
-              image: imageURL,
-            };
-            return item;
-          }),
-        );
+    if (NFTTokenIds && NFTTokenIds.length > 0) {
+      const items = NFTTokenIds.map(i => {
+        const imageURL = `https://ipfs.infura.io/ipfs/${i.image}`;
+        let item = {
+          ...i,
+          image: imageURL,
+        };
+        return item;
+      });
 
-        setNfts(items);
-      }
-    };
-    loadNfts();
+      setNfts(items);
+    }
   }, [NFTTokenIds]);
+
+  const handleDeposit = async () => {
+    const value = parseFloat(amount);
+    const options = {
+      contractAddress: gameAddress,
+      functionName: 'deposit',
+      abi: gameContractABI,
+      msgValue: Moralis.Units.ETH(value),
+    };
+
+    await contractProcessor.fetch({
+      params: options,
+    });
+  };
+
+  const handleWithdraw = async () => {
+    const options = {
+      contractAddress: gameAddress,
+      functionName: 'withdraw',
+      abi: gameContractABI,
+      // msgValue: Moralis.Units.ETH(value),
+    };
+    await contractProcessor.fetch({
+      params: options,
+    });
+  };
+
+  console.log(nfts);
 
   return (
     <PageContainer>
       {/* <div className="flex flex-col items-center justify-center text-white w-full h-screen font-montserrat"> */}
       <div className=" flex flex-col mt-20 items-center justify-center w-full text-white font-montserrat">
-        <div className="font-press-start align-left w-full mb-4">
+        {/* <div className="font-press-start align-left w-full mb-4">
           <h1 className="text-4xl mx-14">Dashboard</h1>
-        </div>
+        </div> */}
         <div className="w-full flex items-center justify-around">
           <div className="flex flex-col w-full mx-12">
             <div className="bg-dark-purple text-heading-color text-2xl p-4 font-press-start">
@@ -84,7 +108,7 @@ function DashBoard() {
                   size={10}
                   scale={3}
                   color="#dfe"
-                  bgColor="#ffe"
+                  // bgColor=""
                   spotColor="#abc"
                   className="identicon"
                 />
@@ -108,48 +132,57 @@ function DashBoard() {
 
             {/* 2nd box */}
             {/* <div className="flex items-center justify-between  mt-4 w-full p-4"> */}
-            <div className="grid grid-cols-2 auto-rows-fr mt-4 w-full p-4">
+            <div
+              className="grid grid-cols-2 mt-4 w-full py-2 gap-8"
+              style={{ gridAutoRows: '1fr' }}
+            >
               {/* Deposit */}
               <div className="">
-                <div className="bg-dark-purple text-heading-color text-2xl p-2 font-press-start">
+                <div className="bg-dark-purple text-heading-color text-2xl p-4 font-press-start">
                   Deposit
                 </div>
-                <div className="bg-play-comp-color p-4 rounded-lg ">
+                <div className="bg-play-comp-color p-4 rounded-br-lg rounded-bl-lg ">
                   <p className="text-md">
                     Transfer your MATIC coins to Web3Chess to stake and start
                     chess match with that
                   </p>
                   <div className="flex-1/2 items-center justify-center ">
                     <label
-                      class="block uppercase tracking-wide text-white text-xs font-bold mb-2"
+                      className="block uppercase tracking-wide text-white text-xs font-bold mb-2"
                       for="grid-first-name"
                     >
                       Enter Amount in MATIC
                     </label>
                     <input
-                      class="appearance-none block  bg-btn-input text-white border border-play-hand-btn rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:border-white"
+                      className="appearance-none block  bg-btn-input text-white border w-full border-play-hand-btn rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:border-white"
                       id="grid-first-name"
                       type="text"
                       placeholder="0"
+                      value={amount}
+                      onChange={e => setAmount(e.target.value)}
                     />
                     <div
                       className={`flex items-center  rounded p-2 bg-btn-purple border-play-hand-btn mb-4 border-2 cursor-pointer justify-center `}
                     >
-                      <button className="inline-block">Deposit Amount</button>
+                      <button onClick={handleDeposit} className="inline-block">
+                        Deposit Amount
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
               {/* Withdraw */}
-              <div className="">
-                <div className="bg-dark-purple text-heading-color text-2xl p-2 font-press-start">
+              <div className="flex flex-col ">
+                <div className="bg-dark-purple text-heading-color text-2xl p-4 font-press-start">
                   Withdraw
                 </div>
-                <div className="bg-play-comp-color p-4">
+                <div className="bg-play-comp-color flex flex-col p-4 flex-1 justify-between rounded-br-lg rounded-bl-lg ">
                   <p className="text-md p-2">
-                    You can Withdraw all your MATIC in Web3 Chess
+                    You can Withdraw all your MATIC in from Web3 Chess to your
+                    wallet
                   </p>
                   <div
+                    onClick={handleWithdraw}
                     className={`flex items-center  rounded p-2 bg-btn-purple border-play-hand-btn mb-4 border-2 cursor-pointer justify-center `}
                   >
                     <button className="inline-block">WithDraw</button>
@@ -160,30 +193,31 @@ function DashBoard() {
 
             {/* 3rd box */}
             <div className="mt-4">
-              <div className="bg-dark-purple text-heading-color text-2xl p-4">
+              <div className="bg-dark-purple text-heading-color text-2xl p-4 font-press-start">
                 Web3 Chess NFT Gallery
               </div>
-              <div className="flex items-center justify-between bg-play-comp-color w-full p-8 overflow-x-scroll">
-                {nfts &&
-                  totalNFTs > 0 &&
-                  nfts.map(nft => {
-                    return (
-                      <div>
-                        <img
-                          alt="nft"
-                          src={nft.image}
-                          height="200"
-                          width="300"
-                        />
-                        <h2
-                          className="font-press-start text-nft-heading cursor-pointer"
-                          onClick={() => (window.location.href = nft.image)}
-                        >
-                          {nft?.metadata?.title}
-                        </h2>
-                      </div>
-                    );
-                  })}
+              <div className="flex overflow-auto">
+                <div className="flex justify-center items-center   flex-nowrap bg-play-comp-color p-8 ">
+                  {nfts &&
+                    totalNFTs > 0 &&
+                    nfts.map(nft => {
+                      return (
+                        <div key={nft.token_id} className="mx-2 h-48 w-60">
+                          <img
+                            alt="nft"
+                            src={nft.image}
+                            // className="h-32 w-40"
+                          />
+                          <h2
+                            className="font-press-start text-xs text-nft-heading cursor-pointer whitespace-nowrap"
+                            onClick={() => (window.location.href = nft.image)}
+                          >
+                            {nft?.metadata?.title}
+                          </h2>
+                        </div>
+                      );
+                    })}
+                </div>
               </div>
             </div>
           </div>

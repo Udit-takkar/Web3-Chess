@@ -7,7 +7,7 @@ import Computer from '../assets/computer.webp';
 import PageContainer from '../shared/PageContainer';
 
 function Home() {
-  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isCreateModalOpen, setCreateModalOpen] = useState(true);
   const [isJoinMatchModalOpen, setJoinModalOpen] = useState(false);
 
   return (

@@ -10,7 +10,7 @@ function Header() {
   const { authenticate, isAuthenticated, isAuthenticating } = useMoralis();
 
   return (
-    <nav className="fixed top-0 left-0 select-none bg-nav  w-full min-h-20 h-20">
+    <nav className="fixed top-0 left-0 select-none bg-nav  w-full min-h-20 h-20 z-10">
       <div className="flex flex-no-shrink justify-between h-full items-center ">
         <div className=" m-1.5 flex items-center">
           <img alt="web3-chess-logo" className="h-14 w-14 mx-2" src={Logo} />

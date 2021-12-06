@@ -8,13 +8,17 @@ import Moralis from 'moralis';
 import Matic from '../assets/polygon.svg';
 import { useNFTTokenIds } from '../hooks/useNFTTokenIds';
 import { useWeb3ExecuteFunction } from 'react-moralis';
+import { useNFTBalance } from '../hooks/useNFTBalance';
 
 function DashBoard() {
   const { walletAddress, gameAddress, gameContractABI, nftContract } =
     useMoralisDapp();
+  const { NFTBalance, getNFTBalance } = useNFTBalance({
+    token_address: nftContract,
+  });
+
   const [balance, setBalance] = useState(0);
-  const { NFTTokenIds, totalNFTs, getNFTTokenIds } =
-    useNFTTokenIds(nftContract);
+
   const [nfts, setNfts] = useState([]);
   const [amount, setAmount] = useState(0);
 
@@ -42,24 +46,9 @@ function DashBoard() {
 
   useEffect(() => {
     if (nftContract) {
-      getNFTTokenIds();
+      getNFTBalance();
     }
   }, [nftContract]);
-
-  useEffect(() => {
-    if (NFTTokenIds && NFTTokenIds.length > 0) {
-      const items = NFTTokenIds.map(i => {
-        const imageURL = `https://ipfs.infura.io/ipfs/${i.image}`;
-        let item = {
-          ...i,
-          image: imageURL,
-        };
-        return item;
-      });
-
-      setNfts(items);
-    }
-  }, [NFTTokenIds]);
 
   const handleDeposit = async () => {
     const value = parseFloat(amount);
@@ -87,15 +76,9 @@ function DashBoard() {
     });
   };
 
-  console.log(nfts);
-
   return (
     <PageContainer>
-      {/* <div className="flex flex-col items-center justify-center text-white w-full h-screen font-montserrat"> */}
       <div className=" flex flex-col mt-20 items-center justify-center w-full text-white font-montserrat">
-        {/* <div className="font-press-start align-left w-full mb-4">
-          <h1 className="text-4xl mx-14">Dashboard</h1>
-        </div> */}
         <div className="w-full flex items-center justify-around">
           <div className="flex flex-col w-full mx-12">
             <div className="bg-dark-purple text-heading-color text-2xl p-4 font-press-start">
@@ -131,7 +114,7 @@ function DashBoard() {
             </div>
 
             {/* 2nd box */}
-            {/* <div className="flex items-center justify-between  mt-4 w-full p-4"> */}
+
             <div
               className="grid grid-cols-2 mt-4 w-full py-2 gap-8"
               style={{ gridAutoRows: '1fr' }}
@@ -197,26 +180,26 @@ function DashBoard() {
                 Web3 Chess NFT Gallery
               </div>
               <div className="flex overflow-auto">
-                <div className="flex justify-center items-center   flex-nowrap bg-play-comp-color p-8 ">
-                  {nfts &&
-                    totalNFTs > 0 &&
-                    nfts.map(nft => {
-                      return (
-                        <div key={nft.token_id} className="mx-2 h-48 w-60">
-                          <img
-                            alt="nft"
-                            src={nft.image}
-                            // className="h-32 w-40"
-                          />
-                          <h2
-                            className="font-press-start text-xs text-nft-heading cursor-pointer whitespace-nowrap"
-                            onClick={() => (window.location.href = nft.image)}
-                          >
-                            {nft?.metadata?.title}
-                          </h2>
-                        </div>
-                      );
-                    })}
+                <div className="flex  items-center flex-1  flex-nowrap bg-play-comp-color p-8 ">
+                  {NFTBalance?.sort(
+                    (a, b) => b.block_number_minted - a.block_number_minted,
+                  ).map(nft => {
+                    return (
+                      <div key={nft.token_id} className="mx-2 h-60 w-60">
+                        <img
+                          alt="nft"
+                          src={`https://ipfs.infura.io/ipfs/${nft.image}`}
+                          className="h-60 w-60"
+                        />
+                        <h2
+                          className="font-press-start text-xs text-center text-nft-heading cursor-pointer whitespace-nowrap"
+                          onClick={() => (window.location.href = nft.image)}
+                        >
+                          {nft?.metadata?.title}
+                        </h2>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

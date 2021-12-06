@@ -3,23 +3,16 @@ import NFTtemplate from '../../assets/chessmeme.jpeg';
 import Portal from '../../shared/Portal';
 import ModalContainer from '../../shared/ModalContainer';
 import { saveData } from '../../utils/ipfsClient';
-import CloseBtn from '../../components/CloseBtn';
+import CloseBtn from '../CloseBtn';
 import { useMoralisDapp } from '../../contexts/MoralisDappProvider';
 import { useWeb3ExecuteFunction } from 'react-moralis';
 import { useMoralisFile } from 'react-moralis';
-import Moralis from 'moralis';
+import moment from 'moment';
 
-function EndGame({ setOpen, opponent }) {
+function MintWinnerCanvasNFT({ setOpen, opponent }) {
   const canvasRef = useRef(null);
   const [finalImg, setImg] = useState(null);
-  const {
-    walletAddress,
-    gameAddress,
-    gameContractABI,
-    chainId,
-    nftContractABI,
-    nftContract,
-  } = useMoralisDapp();
+  const { nftContractABI, nftContract } = useMoralisDapp();
   const ipfsProcessor = useMoralisFile();
   const contractProcessor = useWeb3ExecuteFunction();
 
@@ -38,8 +31,9 @@ function EndGame({ setOpen, opponent }) {
       for (let i = 0; i < lines.length; ++i) {
         context.fillText(lines[i], x, y + i * lineHeight);
       }
-      context.font = '10pt Calibri';
-      context.fillText(`Date: ${Date.now()}`, 650, 555);
+      const dateToDisplay = moment().format('dddd, MMMM Do YYYY, h:mm:ss a');
+      context.font = '9pt Calibri';
+      context.fillText(`${dateToDisplay}`, 570, 555);
       canvas.toBlob(function (blob) {
         setImg(blob);
       }, 'image/png');
@@ -85,19 +79,21 @@ function EndGame({ setOpen, opponent }) {
   };
 
   return (
-    <ModalContainer>
-      <div
-        className="absolute top-2 right-2 h-6 cursor-pointer"
-        onClick={() => setOpen(false)}
-      >
-        <CloseBtn />
-      </div>
-      <div className="flex flex-col bg-yellow-100	 p-4">
+    <ModalContainer
+      style={{ backgroundColor: '#FFFFFF14', borderRadius: '30px' }}
+    >
+      <div className="flex flex-col bg-dark-purple backdrop-filter 	backdrop-blur-md  p-4 rounded-lg border-play-hand-btn border-2">
+        <div
+          className="absolute top-2 right-2 h-6 cursor-pointer bg-white "
+          onClick={() => setOpen(false)}
+        >
+          <CloseBtn />
+        </div>
         <canvas ref={canvasRef} width={800} height={600} />
         <div className="flex items-center justify-center">
           <button
             onClick={handleClick}
-            className="bg-nav text-white text-center rounded px-4 py-2"
+            className="bg-btn-purple border-play-hand-btn text-white mb-2 border-2 cursor-pointer p-4 font-montserrat rounded-lg"
           >
             Mint This NFT
           </button>
@@ -107,4 +103,4 @@ function EndGame({ setOpen, opponent }) {
   );
 }
 
-export default Portal(EndGame);
+export default Portal(MintWinnerCanvasNFT);

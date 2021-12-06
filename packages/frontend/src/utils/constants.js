@@ -10,3 +10,5 @@ export const rpcUrls = {
 export const networkNames = {
   80001: 'Mumbai Testnet',
 };
+
+export const pgn2gifURL = 'https://pgn2gif.glitch.me/thing';

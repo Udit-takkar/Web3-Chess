@@ -73,12 +73,12 @@ function Market() {
           return item;
         }),
       );
-      // const arr = [...items, ...items];
-      // const arr2 = [...arr, ...arr];
-      // const arr3 = [...arr2, ...arr2];
-      // const arr4 = [...arr3, ...arr3];
+      const arr = [...items, ...items];
+      const arr2 = [...arr, ...arr];
+      const arr3 = [...arr2, ...arr2];
+      const arr4 = [...arr3, ...arr3];
 
-      setNFTs(items);
+      setNFTs(arr4);
     };
     console.log(isLoading);
     if (isLoading === false) loadNFTs();
@@ -148,8 +148,12 @@ function Market() {
 
   return (
     <PageContainer>
-      <div className="flex flex-wrap flex-1 font-montserrat items-center justify-center mt-20 ">
-        {marketNFTs?.map((nft, i) => {
+      <h1 className="mt-20 text-heading-color text-5xl font-montserrat underline">
+        Explore NFT Market
+      </h1>
+
+      <div className="flex flex-wrap flex-1 font-montserrat items-center mt-2 justify-center">
+        {marketNFTs?.slice(0, 21).map((nft, i) => {
           return (
             <>
               <div
@@ -157,7 +161,7 @@ function Market() {
                 className="bg-play-comp-color backdrop-filter	backdrop-blur-lg  w-72 rounded-lg p-6 shadow-2xl sm:w-96 m-4"
               >
                 <div className="relative" id="nft">
-                  <div className="absolute grid place-items-center rounded-lg w-full h-full transition duration-200 ease-in-out hover:bg-cyan opacity-0 hover:opacity-60 cursor-pointer">
+                  <div className="absolute grid place-items-center rounded-lg w-full h-full transition duration-200 ease-in-out hover:bg-dark-purple opacity-0 hover:opacity-60 cursor-pointer">
                     <img src={iconView} alt="ojo" id="ojo" />
                   </div>
                   <img

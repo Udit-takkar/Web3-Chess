@@ -5,16 +5,18 @@ import { makeFileObjects, storeFiles } from '../utils/web3storage';
 import Clock from '../components/Clock';
 import { useClock } from '../contexts/ClockContext';
 import Promotion from '../components/modal/Promotion';
-import EndGame from '../components/modal/EndGame';
+import MintWinnerCanvasNFT from '../components/modal/MintWinnerCanvasNFT';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MemoizedMoves } from '../components/Moves';
 import PageContainer from '../shared/PageContainer';
 import { useMoralisDapp } from '../contexts/MoralisDappProvider';
+import MintChessGIF from '../components/modal/MintChessGIF';
 
 import '../styles/chessground.css';
 import '../styles/chessboard.css';
 import Moralis from 'moralis';
-
+const testPgn =
+  '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O 9. h3 Nb8 10. d4 Nbd7 11. c4 c6 cxb5 axb5 13. Nc3 Bb7 14. Bg5 b4 15. Nb1 h6 16. Bh4 c5 17. dxe5 Nxe4 18. Bxe7 Qxe7';
 // ## pass code && game data from context
 function Play({ vsComputer }) {
   // const testCode =
@@ -54,8 +56,8 @@ function Play({ vsComputer }) {
     },
   });
   const [trackMoves, setMoves] = useState([]);
-  const [isEndGameModalOpen, setEndGameModalOpen] = useState(true);
-
+  const [isWinnerCanvasNFTopen, setWinnerCanvasNFTOpen] = useState(true);
+  const [isChessGIFmodalOpen, setChessGIFmodalOpen] = useState(false);
   const opponentColor = startColor === 'white' ? 'black' : 'white';
 
   const home = game[startColor];
@@ -179,7 +181,7 @@ function Play({ vsComputer }) {
         !vsComputer &&
         winnerAddress.toLowerCase() === home.address.toLowerCase()
       ) {
-        setEndGameModalOpen(true);
+        setWinnerCanvasNFTOpen(true);
       }
     }
 
@@ -328,8 +330,20 @@ function Play({ vsComputer }) {
           </div>
         </div>
         {selectVisible && <Promotion promotion={promotion} />}
-        {isEndGameModalOpen && (
-          <EndGame setOpen={setEndGameModalOpen} opponent={opponent.address} />
+        {isWinnerCanvasNFTopen && (
+          <MintWinnerCanvasNFT
+            setOpen={setWinnerCanvasNFTOpen}
+            opponent={opponent.address}
+          />
+        )}
+        {isChessGIFmodalOpen && (
+          <MintChessGIF
+            isChessGIFmodalOpen={isChessGIFmodalOpen}
+            setChessGIFmodalOpen={setChessGIFmodalOpen}
+            pgn={testPgn}
+            // pgn={chess.pgn()}
+            movesHash="hdhhdhdhdhdhhddh"
+          />
         )}
         <div className="self-start min-w-1/4 h-full my-auto">
           <MemoizedMoves trackMoves={trackMoves} boardSize={boardsize} />

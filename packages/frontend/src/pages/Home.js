@@ -5,10 +5,34 @@ import ChessBoard from '../assets/ChessBoard.webp';
 import playHand from '../assets/playhand.webp';
 import Computer from '../assets/computer.webp';
 import PageContainer from '../shared/PageContainer';
+import { useNavigate } from 'react-router-dom';
+import { useMoralisDapp } from '../contexts/MoralisDappProvider';
 
 function Home() {
-  const [isCreateModalOpen, setCreateModalOpen] = useState(true);
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isJoinMatchModalOpen, setJoinModalOpen] = useState(false);
+  const { walletAddress } = useMoralisDapp();
+
+  const navigate = useNavigate();
+
+  const playWithComputer = () => {
+    navigate('/play', {
+      state: {
+        gameData: {
+          code: 'play-with-comp',
+          startColor: 'white',
+          white: {
+            address: walletAddress,
+            remainingTime: 600000,
+          },
+          black: {
+            address: '0x00',
+            remainingTime: 600000,
+          },
+        },
+      },
+    });
+  };
 
   return (
     <PageContainer>
@@ -42,6 +66,7 @@ function Home() {
               <Button text="Join Match" imgSrc={playHand} />
             </div>
             <div
+              onClick={playWithComputer}
               className={`flex items-center rounded p-2 bg-play-comp-color border-play-hand-btn mb-4 border-2 cursor-pointer justify-center`}
             >
               <Button text="Play With Computer" imgSrc={Computer} />

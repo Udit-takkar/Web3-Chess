@@ -11,6 +11,8 @@ import { MemoizedMoves } from '../components/Moves';
 import PageContainer from '../shared/PageContainer';
 import { useMoralisDapp } from '../contexts/MoralisDappProvider';
 import MintChessGIF from '../components/modal/MintChessGIF';
+import WinModal from '../components/modal/WinModal';
+import LossModal from '../components/modal/LossModal';
 
 import '../styles/chessground.css';
 import '../styles/chessboard.css';
@@ -24,10 +26,13 @@ function Play({ vsComputer }) {
   const testCode = 'QmWyw1p3qvhFc3mRBQF7EHrRMXsXqjVkkDwMNeQfmo8VDr';
   const { walletAddress } = useMoralisDapp();
   const navigate = useNavigate();
+  const location = useLocation();
+  console.log(location);
   const isClockStarted = useRef(false);
   const [code, setCode] = useState(testCode);
   const startColor =
-    walletAddress.toLowerCase() === '0xdc9fc2d9ab39b4de70cbae0a095a2a7d2cf75065'
+    walletAddress?.toLowerCase() ===
+    '0xdc9fc2d9ab39b4de70cbae0a095a2a7d2cf75065'
       ? 'white'
       : 'black';
   const { state } = useLocation();
@@ -43,6 +48,8 @@ function Play({ vsComputer }) {
   const [orientation, setOrientation] = useState(startColor);
   const [color, setColor] = useState(startColor);
   const [matchStartTime, setMatchStartTime] = useState(null);
+  const [isWinModalOpen, setWinModalOpen] = useState(false);
+  const [isLossModalOpen, setLossModalOpen] = useState(true);
   const [game, setGame] = useState({
     code: testCode,
     startColor: startColor,
@@ -56,7 +63,7 @@ function Play({ vsComputer }) {
     },
   });
   const [trackMoves, setMoves] = useState([]);
-  const [isWinnerCanvasNFTopen, setWinnerCanvasNFTOpen] = useState(true);
+  const [isWinnerCanvasNFTopen, setWinnerCanvasNFTOpen] = useState(false);
   const [isChessGIFmodalOpen, setChessGIFmodalOpen] = useState(false);
   const opponentColor = startColor === 'white' ? 'black' : 'white';
 
@@ -181,7 +188,12 @@ function Play({ vsComputer }) {
         !vsComputer &&
         winnerAddress.toLowerCase() === home.address.toLowerCase()
       ) {
-        setWinnerCanvasNFTOpen(true);
+        setWinModalOpen(true);
+      } else if (
+        !vsComputer &&
+        winnerAddress.toLowerCase() === opponent.address.toLowerCase()
+      ) {
+        setLossModalOpen(true);
       }
     }
 
@@ -345,6 +357,14 @@ function Play({ vsComputer }) {
             movesHash="hdhhdhdhdhdhhddh"
           />
         )}
+        {isWinModalOpen && (
+          <WinModal
+            setOpen={setWinModalOpen}
+            setWinnerCanvasNFTOpen={setWinnerCanvasNFTOpen}
+            setChessGIFmodalOpen={setChessGIFmodalOpen}
+          />
+        )}
+        {isLossModalOpen && <LossModal setOpen={setLossModalOpen} />}
         <div className="self-start min-w-1/4 h-full my-auto">
           <MemoizedMoves trackMoves={trackMoves} boardSize={boardsize} />
         </div>

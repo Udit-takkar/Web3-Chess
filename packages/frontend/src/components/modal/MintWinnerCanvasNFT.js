@@ -82,7 +82,7 @@ function MintWinnerCanvasNFT({ setOpen, opponent }) {
     <ModalContainer
       style={{ backgroundColor: '#FFFFFF14', borderRadius: '30px' }}
     >
-      <div className="flex flex-col bg-dark-purple backdrop-filter 	backdrop-blur-md  p-4 rounded-lg border-play-hand-btn border-2">
+      <div className="flex flex-col bg-dark-purple backdrop-filter 	backdrop-blur-md  p-4 rounded-lg border-play-hand-btn border-2 z-10">
         <div
           className="absolute top-2 right-2 h-6 cursor-pointer bg-white "
           onClick={() => setOpen(false)}

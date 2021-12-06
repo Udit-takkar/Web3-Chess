@@ -36,14 +36,16 @@ function Header() {
 
           <p className="text-navFont font-montserrat text-md font-bold mx-3 tracking-wide">
             {isAuthenticating ? (
-              <div className="flex items-center justify-center ">
-                <div className="w-8 h-8 border-b-2 border-white rounded-full animate-spin"></div>
-              </div>
+              <Loader />
             ) : (
-              walletAddress && getAccountString(walletAddress)
+              isAuthenticated &&
+              walletAddress &&
+              getAccountString(walletAddress)
             )}
             {!isAuthenticated && !isAuthenticating && (
-              <h1 onClick={() => authenticate()}>Connect</h1>
+              <h1 className="cursor-pointer" onClick={() => authenticate()}>
+                Connect
+              </h1>
             )}
           </p>
         </div>
@@ -51,5 +53,13 @@ function Header() {
     </nav>
   );
 }
+
+const Loader = () => {
+  return (
+    <div className="flex items-center justify-center ">
+      <div className="w-8 h-8 border-b-2 border-white rounded-full animate-spin"></div>
+    </div>
+  );
+};
 
 export default Header;

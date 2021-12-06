@@ -6,7 +6,7 @@ import { useMoralisDapp } from '../contexts/MoralisDappProvider';
 import ViewOnPolyscanLogo from '../components/ViewOnPolyscan';
 import Moralis from 'moralis';
 import Matic from '../assets/polygon.svg';
-import { useNFTTokenIds } from '../hooks/useNFTTokenIds';
+// import { useNFTTokenIds } from '../hooks/useNFTTokenIds';
 import { useWeb3ExecuteFunction } from 'react-moralis';
 import { useNFTBalance } from '../hooks/useNFTBalance';
 
@@ -19,7 +19,7 @@ function DashBoard() {
 
   const [balance, setBalance] = useState(0);
 
-  const [nfts, setNfts] = useState([]);
+  // const [nfts, setNfts] = useState([]);
   const [amount, setAmount] = useState(0);
 
   const contractProcessor = useWeb3ExecuteFunction();

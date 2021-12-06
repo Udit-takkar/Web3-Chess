@@ -6,6 +6,7 @@ import { useMoralisFile, useWeb3ExecuteFunction } from 'react-moralis';
 import { useMoralisDapp } from '../../contexts/MoralisDappProvider';
 import { pgn2gifURL } from '../../utils/constants';
 import GIFPlaceholder from '../../assets/GIFPlaceholder.png';
+import Portal from '../../shared/Portal';
 
 function MintChessGIF({ pgn, movesHash, setChessGIFmodalOpen }) {
   const [imgSrc, setImg] = useState(null);
@@ -71,7 +72,7 @@ function MintChessGIF({ pgn, movesHash, setChessGIFmodalOpen }) {
 
   return (
     <ModalContainer style={{ backgroundColor: '#FFFFFF14' }}>
-      <div className="flex flex-col justify-content items-center">
+      <div className="flex flex-col justify-content items-center z-30 text-white">
         <div className="bg-dark-purple text-heading-color  backdrop-filter	backdrop-blur-md  text-3xl text-center p-4 font-montserrat w-full">
           Mint Your Game NFT
         </div>
@@ -104,4 +105,4 @@ function MintChessGIF({ pgn, movesHash, setChessGIFmodalOpen }) {
   );
 }
 
-export default MintChessGIF;
+export default Portal(MintChessGIF);

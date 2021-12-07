@@ -9,6 +9,9 @@ function Header() {
   const { walletAddress } = useMoralisDapp();
   const { authenticate, isAuthenticated, isAuthenticating } = useMoralis();
 
+  const handleConnect = async () => {
+    await authenticate();
+  };
   return (
     <nav className="fixed top-0 left-0 select-none bg-nav  w-full min-h-20 h-20 z-10">
       <div className="flex flex-no-shrink justify-between h-full items-center ">
@@ -43,9 +46,9 @@ function Header() {
               getAccountString(walletAddress)
             )}
             {!isAuthenticated && !isAuthenticating && (
-              <h1 className="cursor-pointer" onClick={() => authenticate()}>
+              <button className="cursor-pointer" onClick={handleConnect}>
                 Connect
-              </h1>
+              </button>
             )}
           </p>
         </div>

@@ -6,7 +6,7 @@ import { useMoralis } from 'react-moralis';
 import { useMoralisDapp } from '../contexts/MoralisDappProvider';
 
 export const ConnectWeb3 = () => {
-  const { chainId, walletAddress } = useMoralisDapp();
+  const { chainId, walletAddress, user } = useMoralisDapp();
   const { logout, isAuthenticating, isAuthenticated, authenticate } =
     useMoralis();
 
@@ -46,7 +46,7 @@ export const ConnectWeb3 = () => {
         </>
       )}
       {isAuthenticated ? (
-        <button onClick={logout()}>Disconnect</button>
+        <button onClick={() => logout()}>Disconnect</button>
       ) : (
         <button
           className="mt-4 w-full  text-white rounded-lg bg-btn-purple border-play-hand-btn   border py-3 px-6 font-semibold text-md "

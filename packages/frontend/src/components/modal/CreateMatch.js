@@ -10,6 +10,7 @@ import { useMoralisFile } from 'react-moralis';
 import Moralis from 'moralis';
 import { useMoralisDapp } from '../../contexts/MoralisDappProvider';
 import { useWeb3ExecuteFunction } from 'react-moralis';
+import { CREATE_MATCH } from '../../utils/constants';
 
 function CreateMatch({ setCreateModalOpen }) {
   const navigate = useNavigate();
@@ -105,6 +106,7 @@ function CreateMatch({ setCreateModalOpen }) {
             gameData: {
               code: gameCode,
               startColor: 'white',
+              from: CREATE_MATCH,
               white: {
                 address: walletAddress,
                 remainingTime: 600000,

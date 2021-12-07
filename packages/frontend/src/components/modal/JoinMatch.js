@@ -102,6 +102,7 @@ function JoinMatch({ setJoinModalOpen }) {
               gameData: {
                 code,
                 startColor: player2Color,
+                from: 'JOIN_MATCH',
                 white: {
                   address: walletAddress,
                   remainingTime: 600000,

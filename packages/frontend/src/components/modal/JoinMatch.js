@@ -85,10 +85,12 @@ function JoinMatch({ setJoinModalOpen }) {
       if (balance < stake) {
         setErr('Not Enough Balance');
       }
+      const whiteAddress = player2Color === 'white' ? player2 : player1;
+      const blackAddress = player2Color === 'black' ? player2 : player1;
 
       const options = {
         contractAddress: gameAddress,
-        functionName: 'startGame',
+        functionName: 'participateGame',
         abi: gameContractABI,
         params: {
           gameCode: code,
@@ -102,13 +104,14 @@ function JoinMatch({ setJoinModalOpen }) {
               gameData: {
                 code,
                 startColor: player2Color,
+                vsComputer: false,
                 from: 'JOIN_MATCH',
                 white: {
-                  address: walletAddress,
+                  address: whiteAddress,
                   remainingTime: 600000,
                 },
                 black: {
-                  address: player2,
+                  address: blackAddress,
                   remainingTime: 600000,
                 },
               },

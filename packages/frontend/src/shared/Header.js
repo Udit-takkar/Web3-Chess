@@ -30,6 +30,7 @@ function Header() {
             return (
               <NavLink
                 to={route}
+                key={name}
                 className="text-navFont font-montserrat text-md font-bold mx-3 tracking-wide"
               >
                 {name}

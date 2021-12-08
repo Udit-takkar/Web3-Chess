@@ -21,6 +21,7 @@ function Home() {
         gameData: {
           code: 'play-with-comp',
           startColor: 'white',
+          vsComputer: true,
           white: {
             address: walletAddress,
             remainingTime: 600000,

@@ -62,9 +62,12 @@ function CreateMatch({ setCreateModalOpen }) {
 
   const onSubmit = async data => {
     const fields = { fields: data };
-    const balance = await getBalance();
+    const amount = parseFloat(data.amount);
 
-    if (data.amount > balance) {
+    const balance = await getBalance();
+    const web3 = new Moralis.Web3();
+
+    if (amount > balance) {
       setError('amount', {
         type: 'manual',
         message: 'Your Balance is less than the amount',
@@ -79,7 +82,7 @@ function CreateMatch({ setCreateModalOpen }) {
       player1Color: 'white',
       player2: opponentAddress,
       player2Color: 'black',
-      stake: data.amount,
+      stake: amount,
       time: 60000,
     };
 
@@ -95,7 +98,7 @@ function CreateMatch({ setCreateModalOpen }) {
         gameCode,
         beforeMatchDataURI,
         opponent: opponentAddress,
-        stake: data.amount,
+        stake: web3.utils.toWei(data.amount, 'ether'),
       },
     };
     await contractProcessor.fetch({
@@ -106,6 +109,7 @@ function CreateMatch({ setCreateModalOpen }) {
             gameData: {
               code: gameCode,
               startColor: 'white',
+              vsComputer: false,
               from: CREATE_MATCH,
               white: {
                 address: walletAddress,
@@ -202,11 +206,9 @@ function CreateMatch({ setCreateModalOpen }) {
         <input
           className="border-solid  bg-btn-input border-gray-300 border py-2 px-4 w-full rounded text-white"
           name="amount"
-          type="number"
           placeholder="Enter amount"
           autoFocus
           {...register('amount', {
-            valueAsNumber: true,
             required: 'Please enter a valid amount',
           })}
         />

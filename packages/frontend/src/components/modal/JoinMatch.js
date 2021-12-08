@@ -70,10 +70,16 @@ function JoinMatch({ setJoinModalOpen }) {
       // const url =
       //   'https://ipfs.moralis.io:2053/ipfs/QmPmMJGGNEcRWn8fK7js9wXxUJvqKZHDQvzkeponTzP36r';
       const res = await axios.get(`${url}`);
-      setMatchData({ ...res.data, code: data.code });
+      if (res.data) setMatchData({ ...res.data, code: data.code });
       setShowMatchDetails(true);
     } catch (err) {
       console.log(err);
+      if (err.status === 404) {
+        setError('code', {
+          type: 'manual',
+          message: 'Invalid Code',
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -125,10 +131,12 @@ function JoinMatch({ setJoinModalOpen }) {
     }
   };
   return (
-    <ModalContainer>
-      <h1 className="text-center text-4xl font-semibold mt-10">Join Match</h1>
+    <ModalContainer style={{ backgroundColor: '#FFFFFF14' }}>
+      <h1 className="bg-dark-purple font-montserrat p-2  backdrop-filter	backdrop-blur-md    border-2  text-heading-color text-center text-3xl font-semibold ">
+        Join Match
+      </h1>
       <div
-        className="absolute top-2 right-2 h-6 cursor-pointer"
+        className="absolute top-2 right-2 h-6 cursor-pointer text-white"
         onClick={() => setJoinModalOpen(false)}
       >
         <CloseBtn />
@@ -136,10 +144,10 @@ function JoinMatch({ setJoinModalOpen }) {
 
       {!showMatchDetails && (
         <form
-          className="max-w-xl m-auto py-10 px-12 border"
+          className="max-w-xl m-auto py-10 px-12 border font-montserrat backdrop-filter	backdrop-blur-md bg-play-comp-color border-play-hand-btn "
           onSubmit={handleSubmit(onSubmit)}
         >
-          <label className="text-gray-600 font-medium">Enter Match Code</label>
+          <label className="text-black font-medium">Enter Match Code</label>
           <input
             className="border-solid border-gray-300 border py-2 px-4 w-full rounded text-gray-700"
             name="code"
@@ -155,7 +163,7 @@ function JoinMatch({ setJoinModalOpen }) {
             </div>
           )}
           <button
-            className="mt-4 w-full bg-green-400 hover:bg-green-600 text-green-100 border py-3 px-6 font-semibold text-md rounded"
+            className="mt-4 w-full  text-white rounded-lg bg-btn-purple border-play-hand-btn   border py-3 px-6 font-semibold text-md "
             type="submit"
           >
             Enter Code
@@ -163,7 +171,7 @@ function JoinMatch({ setJoinModalOpen }) {
         </form>
       )}
       {showMatchDetails && (
-        <div className="p-4">
+        <div className="p-4 font-montserrat text-2xl text-white   backdrop-filter	backdrop-blur-md">
           <div>Player 1: {player1}</div>
           <div>Player 2: {player2}</div>
           <div>Player 1 Color: {player1Color}</div>
@@ -173,13 +181,13 @@ function JoinMatch({ setJoinModalOpen }) {
           <div className="flex m-4">
             <button
               onClick={() => navigate('/')}
-              className="mt-4 w-full bg-green-400 hover:bg-green-600 text-green-100 border py-3 px-6 font-semibold text-md rounded"
+              className="mt-4 w-full bg-red-400 text-red-100 border py-3 px-6 font-semibold text-md rounded"
             >
               Reject
             </button>
             <button
               onClick={handleClick}
-              className="mt-4 w-full bg-green-400 hover:bg-green-600 text-green-100 border py-3 px-6 font-semibold text-md rounded"
+              className="mt-4 w-full  text-white rounded-lg bg-btn-purple border-play-hand-btn   border py-3 px-6 font-semibold text-md mx-4"
             >
               Accept
             </button>

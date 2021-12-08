@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Chess from 'chess.js';
 import Chessground from 'react-chessground';
 import Clock from '../components/Clock';
@@ -67,7 +67,9 @@ function Play() {
   const [isConnectToMatchVisisble, setIsConnectToMatchVisisble] =
     useState(false);
 
-  const opponentColor = color === 'white' ? 'black' : 'white';
+  const opponentColor = useMemo(() => {
+    return game.startColor === 'white' ? 'black' : 'white';
+  }, [game.startColor]);
 
   const home = game[game.startColor];
   const opponent = game[opponentColor];
@@ -347,12 +349,13 @@ function Play() {
       });
     };
     if (game.code) {
+      console.log('Not me you guys');
       setOrientation(game.startColor);
       setColor(game.startColor);
       setIsMyMove(game.startColor === 'white');
       listenToEvents();
     }
-  }, [game]);
+  }, [game.code]);
 
   useEffect(() => {
     if (state?.gameData) {

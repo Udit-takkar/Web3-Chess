@@ -66,6 +66,7 @@ function Play() {
   const [isChessGIFmodalOpen, setChessGIFmodalOpen] = useState(false);
   const [isConnectToMatchVisisble, setIsConnectToMatchVisisble] =
     useState(false);
+  const GIFMetadata = useRef({ pgn: null, hash: null });
 
   const opponentColor = useMemo(() => {
     return game.startColor === 'white' ? 'black' : 'white';
@@ -125,6 +126,12 @@ function Play() {
 
     if (chess.game_over() || whiteTime <= 0 || blackTime <= 0) {
       stopClock();
+      const file = new Moralis.File('moves.json', {
+        base64: btoa(JSON.stringify(chess.pgn())),
+      });
+      await file.saveIPFS();
+      GIFMetadata.current = { pgn: chess.pgn(), hash: file.hash() };
+
       let winnerAddress = null;
       let finalComment = '';
       let isMatchDrawn = false;
@@ -188,13 +195,12 @@ function Play() {
       };
 
       //  Save to Chain here
-
       if (game.startColor === 'white') {
         const file = new Moralis.File('game.json', {
           base64: btoa(JSON.stringify(data)),
         });
         await file.saveIPFS();
-
+        console.log('Main Aa Gya');
         const afterMatchDataURI = file.ipfs();
         let outcome;
         if (isMatchDrawn) {
@@ -212,11 +218,18 @@ function Play() {
           params: {
             gameCode: game.code,
             afterMatchDataURI,
-            outcome,
+            result: outcome,
           },
         };
         await contractProcessor.fetch({
           params: options,
+          onError: error => {
+            console.error(error);
+
+            alert('Something Went Wrong');
+            return;
+          },
+          onSuccess: () => console.log('Success'),
         });
       }
 
@@ -333,7 +346,6 @@ function Play() {
             setIsMyMove(false);
           }
         } else if (obj.attributes.type === 'join') {
-          console.log('kuch toh hua hain');
           if (home.address.toLowerCase() !== obj.attributes.by.toLowerCase()) {
             const chessMatch = new ChessMatch();
             chessMatch.set('type', 'start');
@@ -342,18 +354,16 @@ function Play() {
             chessMatch.save();
           }
         } else if (obj.attributes.type === 'start') {
-          console.log('start ho gya');
           setBothPlayersJoined(true);
           setIsConnectToMatchVisisble(false);
         }
       });
     };
     if (game.code) {
-      console.log('Not me you guys');
       setOrientation(game.startColor);
       setColor(game.startColor);
       setIsMyMove(game.startColor === 'white');
-      listenToEvents();
+      if (!game.vsComputer) listenToEvents();
     }
   }, [game.code]);
 
@@ -432,8 +442,9 @@ function Play() {
             isChessGIFmodalOpen={isChessGIFmodalOpen}
             setChessGIFmodalOpen={setChessGIFmodalOpen}
             // pgn={testPgn}
-            pgn={chess.pgn()}
-            movesHash="hdhhdhdhdhdhhddh"
+            // pgn={chess.pgn()}
+            // movesHash="hdhhdhdhdhdhhddh"
+            GIFMetadata={GIFMetadata}
           />
         )}
         {isWinModalOpen && (

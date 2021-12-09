@@ -11,7 +11,7 @@ function MoralisDappProvider({ children }) {
   const [chainId, setChainId] = useState();
   const [gameContractABI, setGameContractABI] = useState(GameContract.abi);
   const [gameAddress, setGameAddress] = useState(
-    '0x3CC75E45019C04f189a21950849428026eA34273',
+    '0xE62EE6D3B254DCB679Ba1550DAeFcAc12CDd94A6',
   );
   const [nftContract, setNftContract] = useState(
     '0x35eC43955e0d7A39430a1C4e6801Dc0857e69A88',

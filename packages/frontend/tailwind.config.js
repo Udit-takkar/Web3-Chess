@@ -15,6 +15,7 @@ module.exports = {
         'btn-purple': '#5A32E6',
         'btn-input': '#1B0D2A',
         'nft-heading': '#34f2f7',
+        lightGray: '#6f7886',
         softblue: 'hsl(215, 51%, 70%)',
         cyan: 'hsl(178, 100%, 50%)',
         darkbluemain: 'hsl(217, 54%, 11%)',

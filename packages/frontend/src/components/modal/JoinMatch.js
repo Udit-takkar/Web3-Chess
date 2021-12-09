@@ -171,8 +171,11 @@ function JoinMatch({ setJoinModalOpen }) {
         </form>
       )}
       {showMatchDetails && (
-        <div className="p-4 font-montserrat text-2xl text-white   backdrop-filter	backdrop-blur-md">
-          <div>Player 1: {player1}</div>
+        <div className="p-4 font-montserrat  text-white text-2xl  backdrop-filter	backdrop-blur-md">
+          <div>
+            Player 1:
+            {player1}
+          </div>
           <div>Player 2: {player2}</div>
           <div>Player 1 Color: {player1Color}</div>
           <div>Player 2 Color: {player2Color}</div>

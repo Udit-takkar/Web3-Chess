@@ -8,28 +8,36 @@ import { pgn2gifURL } from '../../utils/constants';
 import GIFPlaceholder from '../../assets/GIFPlaceholder.png';
 import Portal from '../../shared/Portal';
 
-function MintChessGIF({ pgn, movesHash, setChessGIFmodalOpen }) {
+function MintChessGIF({ GIFMetadata, setChessGIFmodalOpen }) {
   const [imgSrc, setImg] = useState(null);
   const ipfsProcessor = useMoralisFile();
   const [gifBlob, setBlob] = useState(null);
   const contractProcessor = useWeb3ExecuteFunction();
+  const { pgn, hash } = GIFMetadata.current;
 
   const { nftContractABI, nftContract } = useMoralisDapp();
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetch(pgn2gifURL, {
-        method: 'POST',
-        body: JSON.stringify({ pgn, movesHash }),
-        // mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      try {
+        const res = await fetch(pgn2gifURL, {
+          method: 'POST',
+          body: JSON.stringify({
+            pgn,
+            movesHash: hash,
+          }),
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-      const blob = await res.blob();
-      setBlob(blob);
-      setImg(URL.createObjectURL(blob));
+        const blob = await res.blob();
+        setBlob(blob);
+        setImg(URL.createObjectURL(blob));
+      } catch (err) {
+        console.log(err);
+      }
     };
     load();
   }, []);

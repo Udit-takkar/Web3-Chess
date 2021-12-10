@@ -149,7 +149,7 @@ function JoinMatch({ setJoinModalOpen }) {
         >
           <label className="text-black font-medium">Enter Match Code</label>
           <input
-            className="border-solid border-gray-300 border py-2 px-4 w-full rounded text-gray-700"
+            className="border-solid bg-btn-input border-gray-300 border py-2 px-4 w-full rounded text-white"
             name="code"
             placeholder="Enter code"
             autoFocus

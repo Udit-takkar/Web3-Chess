@@ -19,7 +19,6 @@ function DashBoard() {
   });
 
   const [balance, setBalance] = useState(0);
-
   // const [nfts, setNfts] = useState([]);
   const [amount, setAmount] = useState(0);
   const [isListNFTOpen, setListNFTOpen] = useState(false);

@@ -10,6 +10,7 @@ import Portal from '../../shared/Portal';
 
 function MintChessGIF({ GIFMetadata, setChessGIFmodalOpen }) {
   const [imgSrc, setImg] = useState(null);
+  const [err, setErr] = useState(null);
   const ipfsProcessor = useMoralisFile();
   const [gifBlob, setBlob] = useState(null);
   const contractProcessor = useWeb3ExecuteFunction();
@@ -37,6 +38,7 @@ function MintChessGIF({ GIFMetadata, setChessGIFmodalOpen }) {
         setImg(URL.createObjectURL(blob));
       } catch (err) {
         console.log(err);
+        setErr('Something Went Wrong!');
       }
     };
     load();
@@ -93,13 +95,15 @@ function MintChessGIF({ GIFMetadata, setChessGIFmodalOpen }) {
 
         <div className="relative flex flex-col justify-content items-center backdrop-filter	backdrop-blur-md px-20 bg-play-comp-color border-play-hand-btn pt-8 rounded-bl-lg rounded-br-lg">
           <img alt="Gif" src={imgSrc ? imgSrc : GIFPlaceholder} />
-          {imgSrc ? null : (
+          {imgSrc ? null : !err ? (
             <div className="absolute top-44 flex items-center justify-center flex-col-reverse">
               <p className="font-montserrat ">
                 Generating GIF from moves played in the match
               </p>
               <div className="w-16 h-16 border-b-2 border-white rounded-full animate-spin"></div>
             </div>
+          ) : (
+            <h1>{err}</h1>
           )}
           <button
             onClick={imgSrc ? handleClick : null}

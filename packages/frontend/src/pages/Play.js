@@ -23,7 +23,9 @@ import '../styles/chessboard.css';
 // const testCode =
 // '0xDc9FC2d9aB39B4dE70Cbae0A095A2a7d2Cf75065/chess/1637443792940';
 const testPgn =
-  '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O 9. h3 Nb8 10. d4 Nbd7 11. c4 c6 cxb5 axb5 13. Nc3 Bb7 14. Bg5 b4 15. Nb1 h6 16. Bh4 c5 17. dxe5 Nxe4 18. Bxe7 Qxe7';
+  '1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. O-O Nf6 5. d3 O-O 6. h3 d6 7. c3 Ne7 8. Re1 Ng6 9. d4 Bb6 10. Bd3 d5 11. exd5 exd4 12. c4 c6 13. Qc2 cxd5 14. c5 Bc7 15. Nxd4 Re8 16. Rxe8+ Qxe8 17. Nc3 Qe1+ 18. Bf1 Bd7 19. Qe2 Qxe2 20. Ndxe2 Rc8';
+// const testPgn =
+//   '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O 9. h3 Nb8 10. d4 Nbd7 11. c4 c6 cxb5 axb5 13. Nc3 Bb7 14. Bg5 b4 15. Nb1 h6 16. Bh4 c5 17. dxe5 Nxe4 18. Bxe7 Qxe7';
 const testCode = 'QmWyw1p3qvhFc3mRBQF7EHrRMXsXqjVkkDwMNeQfmo8VDr';
 
 function Play() {
@@ -434,14 +436,16 @@ function Play() {
         {isWinnerCanvasNFTopen && (
           <MintWinnerCanvasNFT
             setOpen={setWinnerCanvasNFTOpen}
-            opponent={opponent.address}
+            opponent={
+              opponent.address || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+            }
           />
         )}
         {isChessGIFmodalOpen && (
           <MintChessGIF
             isChessGIFmodalOpen={isChessGIFmodalOpen}
             setChessGIFmodalOpen={setChessGIFmodalOpen}
-            // pgn={testPgn}
+            // GIFMetadata={{ pgn: testPgn, hash: 'lalalahhh' }}
             // pgn={chess.pgn()}
             // movesHash="hdhhdhdhdhdhhddh"
             GIFMetadata={GIFMetadata}

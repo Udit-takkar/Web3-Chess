@@ -15,17 +15,9 @@ import matic from '../assets/polygon.svg';
 import { Link } from 'react-router-dom';
 
 function Market() {
-  const { NFTBalance, getNFTBalance } = useNFTBalance();
-  const {
-    walletAddress,
-    gameAddress,
-    gameContractABI,
-    chainId,
-    marketPlace,
-    marketPlaceAbi,
-    nftContract,
-    nftContractABI,
-  } = useMoralisDapp();
+  // const { NFTBalance, getNFTBalance } = useNFTBalance();
+  const { marketPlace, marketPlaceAbi, nftContract, nftContractABI } =
+    useMoralisDapp();
   const contractProcessor = useWeb3ExecuteFunction();
   const [marketNFTs, setNFTs] = useState([]);
   // const { NFTTokenIds, totalNFTs, getNFTTokenIds } =
@@ -33,6 +25,11 @@ function Market() {
 
   const { data, error, isLoading } = useMoralisQuery('MarketplaceItems');
 
+  const convertToMATIC = async () => {
+    const web3 = new Moralis.Web3();
+
+    return web3.utils.toWei(data.amount, 'ether');
+  };
   useEffect(() => {
     const loadNFTs = async () => {
       const fetchMarketItems = JSON.parse(
@@ -113,23 +110,6 @@ function Market() {
   //   load();
   // }, []);
 
-  const handleClick = async () => {
-    const options = {
-      contractAddress: marketPlace,
-      functionName: 'createMarketItem',
-      abi: marketPlaceAbi,
-      // msgValue: Moralis.Units.ETH('0.05'),
-      params: {
-        nftContract: '0x35ec43955e0d7a39430a1c4e6801dc0857e69a88',
-        tokenId: 2,
-        price: 1,
-      },
-    };
-    await contractProcessor.fetch({
-      params: options,
-    });
-  };
-
   const handleBuy = async (id, price) => {
     const options = {
       contractAddress: marketPlace,
@@ -185,7 +165,7 @@ function Market() {
                     <div className="flex items-center justify-center">
                       <img src={matic} alt="logo" className="h-4 w-4" />
                       <p className=" ml-2 text-cyan font-semibold">
-                        {nft.price} MATIC
+                        {convertToMATIC(nft.price)} MATIC
                       </p>
                     </div>
 

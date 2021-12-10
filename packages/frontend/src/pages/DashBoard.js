@@ -9,6 +9,7 @@ import Matic from '../assets/polygon.svg';
 // import { useNFTTokenIds } from '../hooks/useNFTTokenIds';
 import { useWeb3ExecuteFunction } from 'react-moralis';
 import { useNFTBalance } from '../hooks/useNFTBalance';
+import ListNFT from '../components/modal/ListNFT';
 
 function DashBoard() {
   const { walletAddress, gameAddress, gameContractABI, nftContract } =
@@ -21,6 +22,8 @@ function DashBoard() {
 
   // const [nfts, setNfts] = useState([]);
   const [amount, setAmount] = useState(0);
+  const [isListNFTOpen, setListNFTOpen] = useState(false);
+  const [activeNFT, setActiveNFT] = useState(null);
 
   const contractProcessor = useWeb3ExecuteFunction();
 
@@ -76,11 +79,19 @@ function DashBoard() {
     });
   };
 
+  const handleListNFT = nft => {
+    setActiveNFT(nft);
+    setListNFTOpen(true);
+  };
+
   return (
     <PageContainer>
       <div className=" flex flex-col mt-20 items-center justify-center w-full text-white font-montserrat">
         <div className="w-full flex items-center justify-around">
           <div className="flex flex-col w-full mx-12">
+            {isListNFTOpen && (
+              <ListNFT setOpen={setListNFTOpen} nft={activeNFT} />
+            )}
             <div className="bg-dark-purple text-heading-color text-2xl p-4 font-press-start">
               Web3 Chess Balance
             </div>
@@ -185,12 +196,23 @@ function DashBoard() {
                     (a, b) => b.block_number_minted - a.block_number_minted,
                   ).map(nft => {
                     return (
-                      <div key={nft.token_id} className="mx-2 h-60 w-60">
+                      <div
+                        key={nft.token_id}
+                        className="mx-2 h-60 w-60 relative"
+                      >
+                        <div
+                          className="absolute grid place-items-center rounded-lg w-full h-full transition duration-200 ease-in-out hover:bg-dark-purple opacity-0 hover:opacity-60 cursor-pointer"
+                          onClick={() => handleListNFT(nft)}
+                        >
+                          {/* <img src={iconView} alt="ojo" id="ojo" /> */}
+                          <h1 className="text-white text-2xl">List This NFT</h1>
+                        </div>
                         <img
                           alt="nft"
                           src={`https://ipfs.infura.io/ipfs/${nft.image}`}
                           className="h-60 w-60"
                         />
+
                         <h2
                           className="font-press-start text-xs text-center text-nft-heading cursor-pointer whitespace-nowrap"
                           onClick={() => (window.location.href = nft.image)}
